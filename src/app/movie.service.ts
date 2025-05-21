@@ -75,53 +75,63 @@ export class MovieService {
   private posterSize: string = 'w500';
   private backdropSize: string = 'w1280';
   private configLoaded: boolean = false;
+  private configuration$: Observable<TmdbConfiguration | null>;
+
 
   constructor(private http: HttpClient) {
-    this.loadConfiguration().subscribe();
-  }
-
-  private loadConfiguration(): Observable<TmdbConfiguration> {
-    if (this.configLoaded) {
-      return of(null as any);
-    }
-    const url = `${this.baseUrl}/configuration`;
-    return this.http.get<TmdbConfiguration>(url, this.httpOptions).pipe(
+    this.configuration$ = this.http.get<TmdbConfiguration>(`${this.baseUrl}/configuration`, this.httpOptions).pipe(
       tap(config => {
-        this.imageBaseUrl = config.images.secure_base_url || config.images.base_url;
-        this.posterSize = config.images.poster_sizes.includes('w500') ? 'w500' : config.images.poster_sizes[3] || 'original';
-        this.backdropSize = config.images.backdrop_sizes.includes('w1280') ? 'w1280' : config.images.backdrop_sizes[2] || 'original';
-        this.configLoaded = true;
-        console.log('TMDB Configuration Loaded:', { baseUrl: this.imageBaseUrl, posterSize: this.posterSize });
+        if (config && config.images) {
+          this.imageBaseUrl = config.images.secure_base_url || config.images.base_url;
+          this.posterSize = config.images.poster_sizes.includes('w500') ? 'w500' : (config.images.poster_sizes[3] || 'original');
+          this.backdropSize = config.images.backdrop_sizes.includes('w1280') ? 'w1280' : (config.images.backdrop_sizes[2] || 'original');
+          this.configLoaded = true;
+          console.log('TMDB Configuration Loaded:', { baseUrl: this.imageBaseUrl, posterSize: this.posterSize });
+        } else {
+          console.warn('TMDB Configuration response is not as expected, using defaults.');
+        }
       }),
       catchError(err => {
         console.error('Error loading TMDB configuration:', err);
-        return of(null as any);
-      })
+        return of(null);
+      }),
     );
+    this.configuration$.subscribe();
   }
+
 
   private ensureConfigLoaded<T>(requestFn: () => Observable<T>): Observable<T> {
     if (this.configLoaded) {
       return requestFn();
     } else {
-      return this.loadConfiguration().pipe(
-        switchMap(() => requestFn())
+      return this.configuration$.pipe(
+        switchMap(config => {
+          if (config) {
+            return requestFn();
+          } else {
+            console.error('TMDB configuration not loaded, API calls might fail or use default image paths.');
+            return requestFn();
+          }
+        })
       );
     }
   }
 
   private mapTmdbMovieToAppMovie(tmdbMovie: TmdbMovieResult): Movie {
+    const posterPath = tmdbMovie.poster_path ? `${this.imageBaseUrl}${this.posterSize}${tmdbMovie.poster_path}` : 'assets/images/placeholder_poster.png';
+    const backdropPath = tmdbMovie.backdrop_path ? `${this.imageBaseUrl}${this.backdropSize}${tmdbMovie.backdrop_path}` : undefined;
+
     return {
       id: tmdbMovie.id.toString(),
       title: tmdbMovie.title,
       originalTitle: tmdbMovie.original_title,
       year: tmdbMovie.release_date ? new Date(tmdbMovie.release_date).getFullYear() : 'N/A',
-      posterUrl: tmdbMovie.poster_path ? `${this.imageBaseUrl}${this.posterSize}${tmdbMovie.poster_path}` : 'assets/images/placeholder_poster.png',
-      backdropUrl: tmdbMovie.backdrop_path ? `${this.imageBaseUrl}${this.backdropSize}${tmdbMovie.backdrop_path}` : undefined,
+      posterUrl: posterPath,
+      backdropUrl: backdropPath,
       ratingPercentage: tmdbMovie.vote_average ? Math.round(tmdbMovie.vote_average * 10) : undefined,
       ratingOutOf10: tmdbMovie.vote_average ? tmdbMovie.vote_average.toFixed(1) : undefined,
       duration: tmdbMovie.runtime ? `${Math.floor(tmdbMovie.runtime / 60)}h ${tmdbMovie.runtime % 60}min` : undefined,
-      description: tmdbMovie.overview,
+      description: tmdbMovie.overview || 'Descripción no disponible.',
       genres: tmdbMovie.genres ? tmdbMovie.genres.map(g => g.name) : [],
       actors: tmdbMovie.credits?.cast ? tmdbMovie.credits.cast.slice(0, 10).map(actor => actor.name) : [],
       trailerUrl: this.extractTrailerUrl(tmdbMovie.videos?.results)
@@ -135,7 +145,7 @@ export class MovieService {
     return trailer ? `https://www.youtube.com/embed/${trailer.key}` : undefined;
   }
 
-  getPopularMovies(page: number = 1, limit: number = 8): Observable<Movie[]> {
+  getPopularMovies(page: number = 1, limit: number = 12): Observable<Movie[]> {
     return this.ensureConfigLoaded(() => {
       const params = new HttpParams()
         .set('language', 'es-ES')
@@ -191,11 +201,11 @@ export class MovieService {
       );
     });
   }
-  
+
   getHomeMoviesData(): Observable<{ popular: Movie[], trendingDay: Movie[], trendingWeek: Movie[] }> {
     return this.ensureConfigLoaded(() => {
       return forkJoin({
-        popular: this.getPopularMovies(1, 8),
+        popular: this.getPopularMovies(1, 12),
         trendingDay: this.getTrendingMovies('day', 1, 5),
         trendingWeek: this.getTrendingMovies('week', 1, 5)
       }).pipe(
@@ -209,7 +219,7 @@ export class MovieService {
 
   private handleError<T>(operation = 'operation', result?: T) {
     return (error: any): Observable<T> => {
-      console.error(`${operation} failed: ${error.message}`, error);
+      console.error(`${operation} failed: ${error.status} ${error.statusText}`, error);
       return of(result as T);
     };
   }

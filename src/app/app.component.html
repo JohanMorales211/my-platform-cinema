@@ -12,7 +12,11 @@
     <nav class="main-nav">
       <ul>
         <li><a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="isMenuOpen = false">Películas</a></li>
-        <li><a href="#" (click)="$event.preventDefault(); isMenuOpen = false;">Series <span class="arrow-down"></span></a></li>
+        <li>
+          <a routerLink="/series-en-mantenimiento" routerLinkActive="active" (click)="isMenuOpen = false">
+            Series <span class="arrow-down"></span>
+          </a>
+        </li>
       </ul>
     </nav>
     <div class="search-bar">
