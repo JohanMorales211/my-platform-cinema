@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Movie, ALL_MOVIES } from '../app/movie-data';
 import { KeepHtmlStrongPipe } from '../shared/pipes/keep-html-strong.pipe';
+import { AnimationStateService } from '../shared/services/animation-state.service';
 
 @Component({
   selector: 'app-home',
@@ -19,7 +20,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   activeTab: 'day' | 'week' = 'day';
 
-  welcomeTextFull: string = "En <strong>Johan Films</strong>, te sumergirás en el emocionante universo del cine. Nuestra plataforma está dedicada a presentarte los tráilers de las películas más recientes y las selecciones más destacadas. Explora, descubre y prepárate para tu próxima gran aventura cinematográfica.";
+  welcomeTextFull: string = "En <strong>Johan Films</strong>, te sumergirás en el emocionante universo del cine. Esta plataforma no solo está dedicada a presentarte los tráilers de las películas más recientes y las selecciones más destacadas; también <strong>nació con la intención de mostrar mis habilidades en el desarrollo front-end y de ser un nuevo proyecto destacado para mi portafolio.</strong> Explora, descubre y prepárate para tu próxima gran aventura cinematográfica.";
   displayedWelcomeText: string = "";
   private typingInterval: any;
   private typingSpeed: number = 5;
@@ -28,10 +29,14 @@ export class HomeComponent implements OnInit, OnDestroy {
     return this.activeTab === 'day' ? this.featuredDayMovies : this.featuredWeekMovies;
   }
 
-  constructor() {}
+  constructor(private animationStateService: AnimationStateService) {}
 
   ngOnInit(): void {
-    this.startTypingAnimation();
+    if (!this.animationStateService.homeTypingAnimationPlayed) {
+      this.startTypingAnimation();
+    } else {
+      this.displayedWelcomeText = this.welcomeTextFull;
+    }
   }
 
   ngOnDestroy(): void {
@@ -45,29 +50,16 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.displayedWelcomeText = "";
 
     let currentTextSegment = "";
-    let inTag = false;
 
     this.typingInterval = setInterval(() => {
       if (charIndex < this.welcomeTextFull.length) {
-        const char = this.welcomeTextFull.charAt(charIndex);
-        currentTextSegment += char;
-
-        if (char === '<') {
-          inTag = true;
-        } else if (char === '>') {
-          inTag = false;
-        }
-
-        if (!inTag || (inTag && char === '>')) {
-            this.displayedWelcomeText = currentTextSegment;
-        } else if (!inTag) {
-             this.displayedWelcomeText = currentTextSegment;
-        }
-
+        currentTextSegment += this.welcomeTextFull.charAt(charIndex);
+        this.displayedWelcomeText = currentTextSegment;
         charIndex++;
       } else {
         clearInterval(this.typingInterval);
         this.displayedWelcomeText = this.welcomeTextFull;
+        this.animationStateService.homeTypingAnimationPlayed = true;
       }
     }, this.typingSpeed);
   }

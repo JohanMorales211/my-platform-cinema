@@ -8,10 +8,6 @@
   --primary-orange-rgb: 255, 102, 0;
 }
 
-html, body {
-  overflow-x: hidden;
-}
-
 .movie-detail-page {
   min-height: calc(100vh - 71px);
   background-size: cover;
