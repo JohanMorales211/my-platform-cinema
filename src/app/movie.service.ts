@@ -62,7 +62,7 @@ interface TmdbActor {
 })
 export class MovieService {
   private baseUrl = 'https://api.themoviedb.org/3';
-  private accessToken = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiNjc4NzJlNTFhMDY0MzJkODVhNzNhNjFjYTVlNzE4MiIsIm5iZiI6MTc0Nzg2NTM0NS41MDMsInN1YiI6IjY4MmU0ZjAxOTdhOTVkZjA0YjFjMWM4MCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uOjF9.0tXhZMXCrtWsm8nl8oTfrI-or2M04zR8fLrLX7RIpVo';
+  private accessToken = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiNjc4NzJlNTFhMDY0MzJkODVhNzNhNjFjYTVlNzE4MiIsIm5iZiI6MTc0Nzg2NTM0NS41MDMsInN1YiI6IjY4MmU0ZjAxOTdhOTVkZjA0YjFjMWM4MCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.0tXhZMXCrtWsm8nl8oTfrI-or2M04zR8fLrLX7RIpVo';
 
   private httpOptions = {
     headers: new HttpHeaders({
