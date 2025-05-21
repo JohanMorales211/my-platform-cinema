@@ -1,0 +1,39 @@
+<main class="app-main-content">
+  <div class="content-wrapper">
+    <section class="latest-movies">
+      <h1>Últimas películas publicadas</h1>
+      <p class="section-description">
+        En esta sección tendrás las últimas películas publicadas, cada vez que subimos una película nueva, aquí verás el contenido más reciente y actualizado. Sin embargo, puedes visitar la sección de <strong>películas tendencia del día</strong> y <strong>tendencia de la semana</strong>.
+      </p>
+      <div class="movies-grid">
+        <a *ngFor="let movie of latestMovies" [routerLink]="['/pelicula', movie.id]" class="movie-card">
+          <img [src]="movie.posterUrl" [alt]="movie.title">
+          <span class="year-badge">{{ movie.year }}</span>
+          <p class="movie-title">{{ movie.title }}</p>
+        </a>
+      </div>
+    </section>
+
+    <aside class="featured-movies">
+      <h2>Películas Destacadas</h2>
+      <div class="tabs">
+        <button class="tab-button" [class.active]="activeTab === 'day'" (click)="selectTab('day')" type="button">Día</button>
+        <button class="tab-button" [class.active]="activeTab === 'week'" (click)="selectTab('week')" type="button">Semana</button>
+      </div>
+      <div class="featured-list">
+        <a *ngFor="let movie of currentFeaturedMovies" [routerLink]="['/pelicula', movie.id]" class="featured-movie-item">
+          <img [src]="movie.posterUrl" [alt]="movie.title">
+          <div class="details">
+            <h3>{{ movie.title }}</h3>
+            <div class="info">
+              <span class="rating" *ngIf="movie.ratingOutOf10">{{ movie.ratingOutOf10 }}</span>
+              <span class="rating" *ngIf="movie.ratingPercentage">{{ movie.ratingPercentage }}%</span>
+              <span class="duration" *ngIf="movie.duration">{{ movie.duration }}</span>
+              <span class="year">{{ movie.year }}</span>
+            </div>
+          </div>
+        </a>
+      </div>
+    </aside>
+  </div>
+</main>

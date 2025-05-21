@@ -1,0 +1,53 @@
+<div class="movie-detail-page" *ngIf="movie" [ngStyle]="getBackgroundImageStyle()">
+  <div class="movie-detail-header">
+    <button (click)="goBack()" class="back-button" aria-label="Volver">
+      <i class="fas fa-arrow-left"></i> Volver
+    </button>
+  </div>
+  <div class="movie-detail-content">
+    <div class="poster-container">
+      <img [src]="movie.posterUrl" [alt]="movie.title" class="movie-poster">
+    </div>
+    <div class="info-container">
+      <h1>{{ movie.title }}</h1>
+      <p class="original-title" *ngIf="movie.originalTitle && movie.originalTitle !== movie.title">
+        {{ movie.originalTitle }}
+      </p>
+
+      <div class="meta-info">
+        <span class="rating-percentage" *ngIf="movie.ratingPercentage">
+          <i class="fas fa-star"></i> {{ movie.ratingPercentage }}%
+        </span>
+        <span class="rating-outof10" *ngIf="movie.ratingOutOf10">
+          <i class="fas fa-star"></i> {{ movie.ratingOutOf10 }}
+        </span>
+        <span class="duration" *ngIf="movie.duration"><i class="fas fa-clock"></i> {{ movie.duration }}</span>
+        <span class="year"><i class="fas fa-calendar-alt"></i> {{ movie.year }}</span>
+      </div>
+
+      <p class="description">{{ movie.description }}</p>
+
+      <div class="details-section">
+        <strong>Género:</strong>
+        <span>{{ movie.genres.join(', ') }}</span>
+      </div>
+
+      <div class="details-section">
+        <strong>Actores:</strong>
+        <span>{{ movie.actors.join(', ') }}</span>
+      </div>
+
+      <div class="share-section">
+        <button class="share-button"><i class="fas fa-share-alt"></i> Compartir</button>
+        <a href="#" class="social-icon facebook" aria-label="Compartir en Facebook"><i class="fab fa-facebook-f"></i></a>
+        <a href="#" class="social-icon twitter" aria-label="Compartir en Twitter"><i class="fab fa-twitter"></i></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="!movie" class="movie-not-found">
+  <h2>Película no encontrada</h2>
+  <p>La película que buscas no existe o ha sido removida.</p>
+  <a routerLink="/" class="btn-primary">Volver al Inicio</a>
+</div>

@@ -1,9 +1,9 @@
 <header class="app-header" [class.menu-open]="isMenuOpen">
   <div class="header-container">
-    <div class="logo">
+    <a routerLink="/" class="logo">
       <img src="assets/images/logo_johan_films.png" alt="Johan Films Logo" class="site-logo-img">
       <span class="site-logo-text">Johan Films</span>
-    </div>
+    </a>
 
     <button class="menu-toggle" (click)="toggleMenu()" aria-label="Toggle menu" [attr.aria-expanded]="isMenuOpen">
       <span class="hamburger-icon"></span>
@@ -11,7 +11,7 @@
 
     <nav class="main-nav">
       <ul>
-        <li><a href="#" class="active">Inicio</a></li>
+        <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Inicio</a></li>
         <li><a href="#">Películas <span class="arrow-down"></span></a></li>
         <li><a href="#">Generos <span class="arrow-down"></span></a></li>
         <li><a href="#">Series <span class="arrow-down"></span></a></li>
@@ -24,80 +24,4 @@
   </div>
 </header>
 
-<main class="app-main-content">
-  <div class="content-wrapper">
-    <section class="latest-movies">
-      <h1>Últimas películas publicadas</h1>
-      <p class="section-description">
-        En esta sección tendrás las últimas películas publicadas, cada vez que subimos una película nueva, aquí verás el contenido más reciente y actualizado. Sin embargo, puedes visitar la sección de <strong>películas tendencia del día</strong> y <strong>tendencia de la semana</strong>.
-      </p>
-      <div class="movies-grid">
-        <div class="movie-card">
-          <img src="assets/images/movies/como_entrenar_a_tu_dragon.png" alt="Cómo entrenar a tu dragón">
-          <span class="year-badge">2010</span>
-          <p class="movie-title">Cómo entrenar a tu dragón</p>
-        </div>
-        <div class="movie-card">
-          <img src="assets/images/movies/elio.png" alt="Elio">
-          <span class="year-badge">2025</span>
-          <p class="movie-title">Elio</p>
-        </div>
-        <div class="movie-card">
-          <img src="assets/images/movies/mision_imposible_sentencia_final.jpeg" alt="Misión Imposible: Sentencia final">
-          <span class="year-badge">2023</span>
-          <p class="movie-title">Misión Imposible: Sentencia final</p>
-        </div>
-        <div class="movie-card">
-          <img src="assets/images/movies/lilo_y_stitch.png" alt="Lilo y Stitch">
-          <span class="year-badge">2002</span>
-          <p class="movie-title">Lilo y Stitch</p>
-        </div>
-      </div>
-    </section>
-
-    <aside class="featured-movies">
-      <h2>Películas Destacadas</h2>
-      <div class="tabs">
-        <button class="tab-button active" type="button">Día</button>
-        <button class="tab-button" type="button">Semana</button>
-      </div>
-      <div class="featured-list">
-        <div class="featured-movie-item">
-          <img src="assets/images/movies/f1.jpeg" alt="F1">
-          <div class="details">
-            <h3>F1</h3>
-            <div class="info">
-              <span class="rating">8.1/10</span>
-              <span class="duration">2h 10min</span>
-              <span class="year">2025</span>
-            </div>
-          </div>
-        </div>
-        <div class="featured-movie-item">
-          <img src="assets/images/movies/megan_2_0.jpeg" alt="M3gan 2.0">
-          <div class="details">
-            <h3>M3gan 2.0</h3>
-            <div class="info">
-              <span class="rating">6.8/10</span>
-              <span class="duration">1h 45min</span>
-              <span class="year">2025</span>
-            </div>
-          </div>
-        </div>
-        <div class="featured-movie-item">
-          <img src="assets/images/movies/superman.jpeg" alt="Superman">
-          <div class="details">
-            <h3>Superman</h3>
-            <div class="info">
-              <span class="rating">7.9/10</span>
-              <span class="duration">2h 30min</span>
-              <span class="year">2025</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </aside>
-  </div>
-</main>
-
-<router-outlet />
+<router-outlet></router-outlet>
