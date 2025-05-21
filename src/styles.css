@@ -1,0 +1,123 @@
+/* You can add global styles to this file, and also import other style files */
+body {
+    background-color: #1a2e3f; /* Azul oscuro de fondo */
+    color: #ffffff; /* Texto blanco */
+    font-family: 'Arial', sans-serif;
+  }
+  
+  header {
+    background-color: #0e1a27; /* Otro tono de azul oscuro para el encabezado */
+    padding: 20px;
+  }
+  
+  /* Estilos para elementos interactivos como botones o enlaces */
+  .btn-primary {
+    background-color: #ff8c00; /* Naranja como color principal */
+    color: #ffffff;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  
+  .movie-card {
+    background-color: transparent; /* Las tarjetas no tienen fondo en la imagen */
+    margin: 0;
+    padding: 0;
+    border-radius: 0;
+    text-align: center;
+  }
+
+  /* Header Styles */
+  header {
+    background-color: #0e1a27;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .logo {
+    font-size: 1.8em;
+    font-weight: bold;
+    color: #ff8c00;
+    text-decoration: none;
+  }
+
+  nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+  }
+
+  nav li {
+    margin-left: 25px;
+  }
+
+  nav a {
+    color: #cccccc;
+    text-decoration: none;
+    font-size: 1.1em;
+    transition: color 0.3s ease;
+  }
+
+  nav a:hover {
+    color: #ff8c00;
+  }
+
+  .search-bar input {
+    padding: 8px 15px;
+    border-radius: 20px;
+    border: none;
+    background-color: #2a3b4d;
+    color: #ffffff;
+  }
+  
+  h1, h2, h3 {
+    color: #ff8c00; /* Naranja para los títulos */
+  }
+  .movie-list {
+    margin-bottom: 30px; /* Espacio entre secciones */
+  }
+
+  .movies-container {
+    display: grid; /* Usamos CSS Grid para organizar las tarjetas */
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Columnas flexibles */
+    gap: 20px; /* Espacio entre las tarjetas */
+  }
+
+  .movie-card {
+    text-align: left;
+  }
+
+  .movie-card img {
+    max-width: 100%; /* La imagen no excederá el ancho de la tarjeta */
+    height: auto;
+    border-radius: 8px; /* Ajustado para parecerse a la imagen */
+    margin-bottom: 5px;
+  }
+
+  .movie-card h3 {
+    margin-top: 0;
+    margin-bottom: 2px;
+    font-size: 1em;
+    color: #ffffff; /* Los títulos de las tarjetas son blancos en la imagen */
+    color: #cccccc; /* Color de texto más claro para los detalles */
+    margin-bottom: 5px;
+  }
+
+  .featured-movie .movie-details {
+    display: flex; /* Usamos Flexbox para la película destacada */
+    gap: 20px;
+    background-color: #2a3b4d;
+    padding: 20px;
+    border-radius: 5px;
+  }
+
+  .featured-movie .movie-details img {
+    max-width: 250px; /* Ancho máximo para la imagen destacada */
+    height: auto;
+    border-radius: 5px;
+  }
+  
