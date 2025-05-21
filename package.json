@@ -7,7 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "deploy:gh": "ng build --configuration production --base-href /my-platform-cinema/ && npx angular-cli-ghpages --dir dist/myapp"
+    "deploy:gh": "ng build --configuration production --base-href /my-platform-cinema/ && npx angular-cli-ghpages --dir dist/myapp/browser"
   },
   "private": true,
   "dependencies": {
