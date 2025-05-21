@@ -10,6 +10,57 @@
   gap: 40px;
 }
 
+.page-introduction {
+  background-color: var(--content-background);
+  padding: 25px;
+  border-radius: 8px;
+  margin-bottom: 35px;
+  text-align: left;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.25);
+}
+
+.page-introduction h2 {
+  font-size: 1.8em;
+  color: var(--primary-orange);
+  margin-top: 0;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.page-introduction p {
+  font-size: 1.05em;
+  color: var(--medium-text);
+  line-height: 1.7;
+  margin: 0;
+  position: relative;
+  min-height: 1.5em;
+}
+
+.page-introduction p span strong {
+  color: var(--light-text);
+  font-weight: 600;
+}
+
+.typing-cursor {
+  display: inline-block;
+  background-color: var(--primary-orange);
+  width: 2px;
+  height: 1em;
+  animation: blink 0.7s infinite;
+  margin-left: 1px;
+  vertical-align: text-bottom;
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
 .latest-movies {
   flex: 3;
 }
@@ -207,6 +258,17 @@
     padding: 15px;
   }
 
+  .page-introduction {
+    padding: 20px;
+    margin-bottom: 30px;
+  }
+  .page-introduction h2 {
+    font-size: 1.6em;
+  }
+  .page-introduction p {
+    font-size: 1em;
+  }
+
   .movies-grid {
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     gap: 15px;
@@ -237,6 +299,17 @@
       padding: 3px 7px;
       top: 8px;
       right: 8px;
+  }
+
+  .page-introduction {
+    padding: 15px;
+    margin-bottom: 25px;
+  }
+  .page-introduction h2 {
+    font-size: 1.4em;
+  }
+  .page-introduction p {
+    font-size: 0.9em;
   }
 
   .section-description {

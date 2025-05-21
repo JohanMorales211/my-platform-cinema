@@ -18,7 +18,7 @@ export const ALL_MOVIES: Movie[] = [
   {
     id: 'como-entrenar-a-tu-dragon',
     title: 'Cómo entrenar a tu dragón',
-    year: 2010,
+    year: 2025,
     posterUrl: 'assets/images/movies/como_entrenar_a_tu_dragon.png',
     backdropUrl: 'assets/images/movies/como_entrenar_a_tu_dragon.png',
     ratingPercentage: 90,
@@ -45,7 +45,7 @@ export const ALL_MOVIES: Movie[] = [
     id: 'mision-imposible-sentencia-final',
     title: 'Misión Imposible: Sentencia final',
     originalTitle: 'Mission: Impossible – Dead Reckoning Part One',
-    year: 2023,
+    year: 2025,
     posterUrl: 'assets/images/movies/mision_imposible_sentencia_final.jpeg',
     backdropUrl: 'assets/images/movies/mision_imposible_sentencia_final.jpeg',
     ratingPercentage: 78,
@@ -58,7 +58,7 @@ export const ALL_MOVIES: Movie[] = [
   {
     id: 'lilo-y-stitch',
     title: 'Lilo y Stitch',
-    year: 2002,
+    year: 2025,
     posterUrl: 'assets/images/movies/lilo_y_stitch.png',
     backdropUrl: 'assets/images/movies/lilo_y_stitch.png',
     ratingPercentage: 85,
