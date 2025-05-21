@@ -44,6 +44,25 @@
       </div>
     </div>
   </div>
+
+  <div class="trailer-section-container" *ngIf="movie.trailerUrl && trailerSafeUrl">
+    <div class="trailer-header">
+      <h2>Tráiler</h2>
+    </div>
+    <div class="trailer-responsive-wrapper">
+      <iframe
+        width="560"
+        height="315"
+        [src]="trailerSafeUrl"
+        title="YouTube video player"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        referrerpolicy="strict-origin-when-cross-origin"
+        allowfullscreen>
+      </iframe>
+    </div>
+  </div>
+
 </div>
 
 <div *ngIf="!movie" class="movie-not-found">

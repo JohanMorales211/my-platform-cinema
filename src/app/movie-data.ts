@@ -11,6 +11,7 @@ export interface Movie {
   description: string;
   genres: string[];
   actors: string[];
+  trailerUrl?: string;
 }
 
 export const ALL_MOVIES: Movie[] = [
@@ -24,7 +25,8 @@ export const ALL_MOVIES: Movie[] = [
     duration: '1h 38min',
     description: 'Un joven vikingo marginado llamado Hipo aspira a seguir la tradición de su tribu de convertirse en un cazador de dragones. Después de capturar a su primer dragón, y con la oportunidad de finalmente ganarse la aceptación de la tribu, se da cuenta de que ya no quiere matar al dragón y en su lugar se hace amigo de él.',
     genres: ['Animación', 'Aventura', 'Familiar'],
-    actors: ['Jay Baruchel', 'Gerard Butler', 'Craig Ferguson', 'America Ferrera']
+    actors: ['Jay Baruchel', 'Gerard Butler', 'Craig Ferguson', 'America Ferrera'],
+    trailerUrl: 'https://www.youtube.com/embed/liGB1ssYn38'
   },
   {
     id: 'elio',
@@ -36,7 +38,8 @@ export const ALL_MOVIES: Movie[] = [
     duration: 'N/A',
     description: 'Elio es un niño de once años que es transportado accidentalmente a través de la galaxia y confundido con el embajador intergaláctico de la Tierra.',
     genres: ['Animación', 'Aventura', 'Ciencia Ficción'],
-    actors: ['Yonas Kibreab', 'America Ferrera', 'Jameela Jamil', 'Brad Garrett']
+    actors: ['Yonas Kibreab', 'America Ferrera', 'Jameela Jamil', 'Brad Garrett'],
+    trailerUrl: 'https://www.youtube.com/embed/TN8QGXCpBLg'
   },
   {
     id: 'mision-imposible-sentencia-final',
@@ -49,7 +52,8 @@ export const ALL_MOVIES: Movie[] = [
     duration: '2h 43min',
     description: 'Ethan Hunt y su equipo del FMI se embarcan en su misión más peligrosa hasta la fecha: localizar una nueva y aterradora arma que amenaza a toda la humanidad antes de que caiga en las manos equivocadas.',
     genres: ['Acción', 'Aventura', 'Thriller'],
-    actors: ['Tom Cruise', 'Hayley Atwell', 'Ving Rhames', 'Simon Pegg']
+    actors: ['Tom Cruise', 'Hayley Atwell', 'Ving Rhames', 'Simon Pegg'],
+    trailerUrl: 'https://www.youtube.com/embed/Zk8gDi2ef9Y'
   },
   {
     id: 'lilo-y-stitch',
@@ -61,7 +65,8 @@ export const ALL_MOVIES: Movie[] = [
     duration: '1h 25min',
     description: 'Una niña hawaiana solitaria adopta una "mascota" aparentemente inocente que resulta ser un peligroso experimento genético alienígena que se ha estrellado en la Tierra.',
     genres: ['Animación', 'Aventura', 'Comedia'],
-    actors: ['Daveigh Chase', 'Chris Sanders', 'Tia Carrere', 'David Ogden Stiers']
+    actors: ['Daveigh Chase', 'Chris Sanders', 'Tia Carrere', 'David Ogden Stiers'],
+    trailerUrl: 'https://www.youtube.com/embed/9JIyINjMfcc'
   },
   {
     id: 'f1',
@@ -73,7 +78,8 @@ export const ALL_MOVIES: Movie[] = [
     duration: '2h 10min',
     description: 'Un ex piloto de Fórmula 1 regresa al deporte para asociarse con un novato contra los titanes del deporte.',
     genres: ['Drama', 'Deporte'],
-    actors: ['Brad Pitt', 'Damson Idris', 'Kerry Condon', 'Tobias Menzies']
+    actors: ['Brad Pitt', 'Damson Idris', 'Kerry Condon', 'Tobias Menzies'],
+    trailerUrl: 'https://www.youtube.com/embed/aw8YyC4B1EA'
   },
   {
     id: 'megan-2-0',
