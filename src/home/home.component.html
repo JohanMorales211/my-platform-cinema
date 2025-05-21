@@ -11,12 +11,19 @@
       <p class="section-description">
         En esta sección tendrás las últimas películas publicadas, cada vez que subimos una película nueva, aquí verás el contenido más reciente y actualizado. Sin embargo, puedes visitar la sección de <strong>películas tendencia del día</strong> y <strong>tendencia de la semana</strong>.
       </p>
-      <div class="movies-grid">
+      
+      <div *ngIf="isLoadingLatest" class="loading-indicator">Cargando películas...</div>
+      <div *ngIf="errorLatest && !isLoadingLatest" class="error-message">{{ errorLatest }}</div>
+      
+      <div class="movies-grid" *ngIf="!isLoadingLatest && !errorLatest && latestMovies.length > 0">
         <a *ngFor="let movie of latestMovies" [routerLink]="['/pelicula', movie.id]" class="movie-card">
-          <img [src]="movie.posterUrl" [alt]="movie.title">
+          <img [src]="movie.posterUrl" [alt]="movie.title" onerror="this.src='assets/images/placeholder_poster.png'">
           <span class="year-badge">{{ movie.year }}</span>
           <p class="movie-title">{{ movie.title }}</p>
         </a>
+      </div>
+      <div *ngIf="!isLoadingLatest && !errorLatest && latestMovies.length === 0" class="no-movies-message">
+        No hay películas populares disponibles en este momento.
       </div>
     </section>
 
@@ -26,19 +33,24 @@
         <button class="tab-button" [class.active]="activeTab === 'day'" (click)="selectTab('day')" type="button">Día</button>
         <button class="tab-button" [class.active]="activeTab === 'week'" (click)="selectTab('week')" type="button">Semana</button>
       </div>
-      <div class="featured-list">
+
+      <div *ngIf="isLoadingFeatured" class="loading-indicator">Cargando destacadas...</div>
+      <div *ngIf="errorFeatured && !isLoadingFeatured" class="error-message">{{ errorFeatured }}</div>
+
+      <div class="featured-list" *ngIf="!isLoadingFeatured && !errorFeatured && currentFeaturedMovies.length > 0">
         <a *ngFor="let movie of currentFeaturedMovies" [routerLink]="['/pelicula', movie.id]" class="featured-movie-item">
-          <img [src]="movie.posterUrl" [alt]="movie.title">
+          <img [src]="movie.posterUrl" [alt]="movie.title" onerror="this.src='assets/images/placeholder_poster.png'">
           <div class="details">
             <h3>{{ movie.title }}</h3>
             <div class="info">
-              <span class="rating" *ngIf="movie.ratingOutOf10">{{ movie.ratingOutOf10 }}</span>
-              <span class="rating" *ngIf="movie.ratingPercentage">{{ movie.ratingPercentage }}%</span>
-              <span class="duration" *ngIf="movie.duration">{{ movie.duration }}</span>
+              <span class="rating" *ngIf="movie.ratingOutOf10"><i class="fas fa-star"></i> {{ movie.ratingOutOf10 }}</span>
               <span class="year">{{ movie.year }}</span>
             </div>
           </div>
         </a>
+      </div>
+      <div *ngIf="!isLoadingFeatured && !errorFeatured && currentFeaturedMovies.length === 0" class="no-movies-message">
+        No hay películas destacadas disponibles para {{ activeTab === 'day' ? 'hoy' : 'esta semana' }}.
       </div>
     </aside>
   </div>

@@ -1,4 +1,14 @@
-<div class="movie-detail-page" *ngIf="movie" [ngStyle]="getBackgroundImageStyle()">
+<div *ngIf="isLoading" class="loading-indicator-fullscreen">
+  Cargando detalles de la película...
+</div>
+
+<div *ngIf="!isLoading && error && !movie" class="movie-not-found">
+  <h2>Error</h2>
+  <p>{{ error }}</p>
+  <a routerLink="/" class="btn-primary">Volver al Inicio</a>
+</div>
+
+<div class="movie-detail-page" *ngIf="!isLoading && movie" [ngStyle]="getBackgroundImageStyle()">
   <div class="movie-detail-header">
     <button (click)="goBack()" class="back-button" aria-label="Volver">
       <i class="fas fa-arrow-left"></i> Volver
@@ -6,7 +16,7 @@
   </div>
   <div class="movie-detail-content">
     <div class="poster-container">
-      <img [src]="movie.posterUrl" [alt]="movie.title" class="movie-poster">
+      <img [src]="movie.posterUrl" [alt]="movie.title" class="movie-poster" onerror="this.src='assets/images/placeholder_poster.png'">
     </div>
     <div class="info-container">
       <h1>{{ movie.title }}</h1>
@@ -15,25 +25,25 @@
       </p>
 
       <div class="meta-info">
-        <span class="rating-percentage" *ngIf="movie.ratingPercentage">
-          <i class="fas fa-star"></i> {{ movie.ratingPercentage }}%
-        </span>
         <span class="rating-outof10" *ngIf="movie.ratingOutOf10">
           <i class="fas fa-star"></i> {{ movie.ratingOutOf10 }}
+        </span>
+        <span class="rating-percentage" *ngIf="movie.ratingPercentage && !movie.ratingOutOf10">
+          <i class="fas fa-thumbs-up"></i> {{ movie.ratingPercentage }}%
         </span>
         <span class="duration" *ngIf="movie.duration"><i class="fas fa-clock"></i> {{ movie.duration }}</span>
         <span class="year"><i class="fas fa-calendar-alt"></i> {{ movie.year }}</span>
       </div>
 
-      <p class="description">{{ movie.description }}</p>
+      <p class="description">{{ movie.description || 'Descripción no disponible.' }}</p>
 
-      <div class="details-section">
+      <div class="details-section" *ngIf="movie.genres && movie.genres.length > 0">
         <strong>Género:</strong>
         <span>{{ movie.genres.join(', ') }}</span>
       </div>
 
-      <div class="details-section">
-        <strong>Actores:</strong>
+      <div class="details-section" *ngIf="movie.actors && movie.actors.length > 0">
+        <strong>Actores Principales:</strong>
         <span>{{ movie.actors.join(', ') }}</span>
       </div>
 
@@ -45,11 +55,11 @@
     </div>
   </div>
 
-  <div class="trailer-section-container" *ngIf="movie.trailerUrl && trailerSafeUrl">
+  <div class="trailer-section-container" *ngIf="!isLoading && movie">
     <div class="trailer-header">
       <h2>Tráiler</h2>
     </div>
-    <div class="trailer-responsive-wrapper">
+    <div *ngIf="movie.trailerUrl && trailerSafeUrl" class="trailer-responsive-wrapper">
       <iframe
         width="560"
         height="315"
@@ -61,11 +71,13 @@
         allowfullscreen>
       </iframe>
     </div>
+    <div *ngIf="!movie.trailerUrl && !trailerSafeUrl" class="no-trailer-message">
+      <p>Tráiler no disponible para esta película.</p>
+    </div>
   </div>
-
 </div>
 
-<div *ngIf="!movie" class="movie-not-found">
+<div *ngIf="!isLoading && !movie && !error" class="movie-not-found">
   <h2>Película no encontrada</h2>
   <p>La película que buscas no existe o ha sido removida.</p>
   <a routerLink="/" class="btn-primary">Volver al Inicio</a>

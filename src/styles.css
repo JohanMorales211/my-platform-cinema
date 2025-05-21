@@ -7,6 +7,9 @@
   --medium-text: #CCCCCC;
   --muted-text: #888888;
   --border-color: #333333;
+  --primary-orange-rgb: 255, 102, 0;
+  --error-red: #ff6b6b;
+  --error-background: rgba(255, 0, 0, 0.1);
 }
 
 html, body {
@@ -49,4 +52,85 @@ input[type="text"] {
   border: none;
   cursor: pointer;
   border-radius: 5px;
+  transition: background-color 0.3s ease;
 }
+.btn-primary:hover {
+  background-color: #e65c00;
+}
+
+.loading-indicator,
+.no-movies-message,
+.no-results-message,
+.no-trailer-message p {
+  text-align: center;
+  padding: 20px;
+  font-style: italic;
+  color: var(--medium-text);
+  margin: 15px 0;
+}
+
+.error-message {
+  text-align: center;
+  padding: 15px;
+  background-color: var(--error-background);
+  color: var(--error-red);
+  border: 1px solid var(--error-red);
+  border-radius: 4px;
+  margin: 15px 0;
+  word-break: break-word;
+}
+
+.loading-indicator-fullscreen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 150px);
+  font-size: 1.5em;
+  color: var(--primary-orange);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+img::before {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--content-background);
+  color: var(--medium-text);
+  text-align: center;
+  font-size: 0.9em;
+  padding-top: 20px;
+  box-sizing: border-box;
+}
+img[alt]:not([src=""])::after {
+  content: attr(alt);
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--medium-text);
+  text-align: center;
+  padding: 10px;
+  font-size: 0.8em;
+  background-color: rgba(0,0,0,0.5);
+  border-radius: 4px;
+  max-width: 90%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+img:-moz-broken {}
+img:error {}

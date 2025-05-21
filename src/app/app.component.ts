@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { FooterComponent } from '../shared/footer/footer.component';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-root',
@@ -9,18 +10,28 @@ import { FooterComponent } from '../shared/footer/footer.component';
     RouterOutlet,
     RouterLink,
     RouterLinkActive,
-    FooterComponent
+    FooterComponent,
+    FormsModule
   ],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  styleUrls: ['./app.component.css']
 })
 export class AppComponent {
   title = 'Johan Films';
   isMenuOpen = false;
+  searchQuery: string = '';
 
-  constructor() {}
+  constructor(private router: Router) {}
 
   toggleMenu() {
     this.isMenuOpen = !this.isMenuOpen;
+  }
+
+  onSearch(): void {
+    if (this.searchQuery.trim()) {
+      this.router.navigate(['/search'], { queryParams: { q: this.searchQuery.trim() } });
+      this.searchQuery = '';
+      this.isMenuOpen = false;
+    }
   }
 }

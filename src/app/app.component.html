@@ -1,6 +1,6 @@
 <header class="app-header" [class.menu-open]="isMenuOpen">
   <div class="header-container">
-    <a routerLink="/home" class="logo">
+    <a routerLink="/home" class="logo" (click)="isMenuOpen = false">
       <img src="assets/images/logo_johan_films.png" alt="Johan Films Logo" class="site-logo-img">
       <span class="site-logo-text">Johan Films</span>
     </a>
@@ -11,13 +11,20 @@
 
     <nav class="main-nav">
       <ul>
-        <li><a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Películas</a></li>
-        <li><a href="#">Series <span class="arrow-down"></span></a></li>
+        <li><a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="isMenuOpen = false">Películas</a></li>
+        <li><a href="#" (click)="$event.preventDefault(); isMenuOpen = false;">Series <span class="arrow-down"></span></a></li>
       </ul>
     </nav>
     <div class="search-bar">
-      <input type="text" placeholder="Buscador...">
-      <button type="button" aria-label="Search"><i class="fas fa-search"></i></button>
+      <input
+        type="text"
+        placeholder="Buscar películas..."
+        [(ngModel)]="searchQuery"
+        (keyup.enter)="onSearch()"
+        aria-label="Campo de búsqueda de películas">
+      <button type="button" aria-label="Iniciar búsqueda" (click)="onSearch()">
+        <i class="fas fa-search"></i>
+      </button>
     </div>
   </div>
 </header>

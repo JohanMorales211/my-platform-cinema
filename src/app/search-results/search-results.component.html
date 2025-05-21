@@ -1,0 +1,21 @@
+<div class="search-results-container">
+  <h1 *ngIf="currentQuery">Resultados para: "{{ currentQuery }}"</h1>
+  <h1 *ngIf="!currentQuery && !isLoading">Realiza una búsqueda</h1>
+
+  <div *ngIf="isLoading" class="loading-indicator">Buscando películas...</div>
+  <div *ngIf="error && !isLoading" class="error-message">{{ error }}</div>
+
+  <div *ngIf="!isLoading && !error && movies.length > 0" class="movies-grid-search">
+    <a *ngFor="let movie of movies" [routerLink]="['/pelicula', movie.id]" class="movie-card-search">
+      <img [src]="movie.posterUrl" [alt]="movie.title" onerror="this.src='assets/images/placeholder_poster.png'">
+      <div class="movie-info-search">
+        <h3>{{ movie.title }}</h3>
+        <p class="year-search">{{ movie.year }}</p>
+      </div>
+    </a>
+  </div>
+
+  <div *ngIf="!isLoading && !error && movies.length === 0 && currentQuery" class="no-results-message">
+    No se encontraron resultados para "{{ currentQuery }}". Intenta con otros términos.
+  </div>
+</div>
