@@ -9,5 +9,10 @@ import { RouterOutlet } from '@angular/router';
   styleUrl: './app.component.css'
 })
 export class AppComponent {
-  title = 'myapp';
+  title = 'Johan Films';
+  isMenuOpen = false;
+
+  toggleMenu() {
+    this.isMenuOpen = !this.isMenuOpen;
+  }
 }

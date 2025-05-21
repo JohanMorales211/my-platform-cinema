@@ -1,9 +1,14 @@
-<header class="app-header">
+<header class="app-header" [class.menu-open]="isMenuOpen">
   <div class="header-container">
     <div class="logo">
       <img src="assets/images/logo_johan_films.png" alt="Johan Films Logo" class="site-logo-img">
       <span class="site-logo-text">Johan Films</span>
     </div>
+
+    <button class="menu-toggle" (click)="toggleMenu()" aria-label="Toggle menu" [attr.aria-expanded]="isMenuOpen">
+      <span class="hamburger-icon"></span>
+    </button>
+
     <nav class="main-nav">
       <ul>
         <li><a href="#" class="active">Inicio</a></li>
