@@ -35,10 +35,10 @@ export const ALL_MOVIES: Movie[] = [
     posterUrl: 'assets/images/movies/elio.png',
     backdropUrl: 'assets/images/movies/elio.png',
     ratingPercentage: undefined,
-    duration: 'N/A',
-    description: 'Elio es un niño de once años que es transportado accidentalmente a través de la galaxia y confundido con el embajador intergaláctico de la Tierra.',
-    genres: ['Animación', 'Aventura', 'Ciencia Ficción'],
-    actors: ['Yonas Kibreab', 'America Ferrera', 'Jameela Jamil', 'Brad Garrett'],
+    duration: '1h 39min',
+    description: 'Para Elio, un niño de once años con una imaginación activa y una gran obsesión por los alienígenas, su deseo de ser abducido se hace realidad cuando es transportado accidentalmente a través de la galaxia y confundido con el embajador intergaláctico de la Tierra. Inesperadamente, Elio debe formar nuevos lazos con excéntricas formas de vida alienígenas, navegar una crisis de proporciones intergalácticas y, de alguna manera, descubrir quién está realmente destinado a ser.',
+    genres: ['Animación', 'Aventura', 'Ciencia Ficción', 'Familiar'],
+    actors: ['Yonas Kibreab', 'Zoe Saldaña', 'Jameela Jamil', 'Brad Garrett', 'Remy Edgerly', 'Shirley Henderson'],
     trailerUrl: 'https://www.youtube.com/embed/TN8QGXCpBLg'
   },
   {

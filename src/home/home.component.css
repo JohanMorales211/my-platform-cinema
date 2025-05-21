@@ -48,25 +48,6 @@
   font-weight: 600;
 }
 
-.typing-cursor {
-  display: inline-block;
-  background-color: var(--primary-orange);
-  width: 2px;
-  height: 1em;
-  animation: blink 0.7s infinite;
-  margin-left: 1px;
-  vertical-align: text-bottom;
-}
-
-@keyframes blink {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0;
-  }
-}
-
 .latest-movies {
   flex: 3;
 }
