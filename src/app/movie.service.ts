@@ -62,7 +62,7 @@ interface TmdbActor {
 })
 export class MovieService {
   private baseUrl = 'https://api.themoviedb.org/3';
-  private accessToken = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiNjc4NzJlNTFhMDY0MzJkODVhNzNhNjFjYTVlNzE4MiIsIm5iZiI6MTc0Nzg2NTM0NS41MDMsInN1YiI6IjY4MmU0ZjAxOTdhOTVkZjA0YjFjMWM4MCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.0tXhZMXCrtWsm8nl8oTfrI-or2M04zR8fLrLX7RIpVo';
+  private accessToken = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiNjc4NzJlNTFhMDY0MzJkODVhNzNhNjFjYTVlNzE4MiIsIm5iZiI6MTc0Nzg2NTM0NS41MDMsInN1YiI6IjY4MmU0ZjAxOTdhOTVkZjA0YjFjMWM4MCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uOjF9.0tXhZMXCrtWsm8nl8oTfrI-or2M04zR8fLrLX7RIpVo';
 
   private httpOptions = {
     headers: new HttpHeaders({
@@ -76,7 +76,6 @@ export class MovieService {
   private backdropSize: string = 'w1280';
   private configLoaded: boolean = false;
   private configuration$: Observable<TmdbConfiguration | null>;
-
 
   constructor(private http: HttpClient) {
     this.configuration$ = this.http.get<TmdbConfiguration>(`${this.baseUrl}/configuration`, this.httpOptions).pipe(
@@ -99,7 +98,6 @@ export class MovieService {
     this.configuration$.subscribe();
   }
 
-
   private ensureConfigLoaded<T>(requestFn: () => Observable<T>): Observable<T> {
     if (this.configLoaded) {
       return requestFn();
@@ -117,8 +115,12 @@ export class MovieService {
     }
   }
 
-  private mapTmdbMovieToAppMovie(tmdbMovie: TmdbMovieResult): Movie {
-    const posterPath = tmdbMovie.poster_path ? `${this.imageBaseUrl}${this.posterSize}${tmdbMovie.poster_path}` : 'assets/images/placeholder_poster.png';
+  private mapTmdbMovieToAppMovie(tmdbMovie: TmdbMovieResult): Movie | null {
+    if (!tmdbMovie.poster_path) {
+      return null;
+    }
+
+    const posterPath = `${this.imageBaseUrl}${this.posterSize}${tmdbMovie.poster_path}`;
     const backdropPath = tmdbMovie.backdrop_path ? `${this.imageBaseUrl}${this.backdropSize}${tmdbMovie.backdrop_path}` : undefined;
 
     return {
@@ -152,7 +154,12 @@ export class MovieService {
         .set('page', page.toString());
       const url = `${this.baseUrl}/movie/popular`;
       return this.http.get<TmdbMovieListResponse>(url, { ...this.httpOptions, params }).pipe(
-        map(response => response.results.slice(0, limit).map(m => this.mapTmdbMovieToAppMovie(m))),
+        map(response =>
+          response.results
+            .map(m => this.mapTmdbMovieToAppMovie(m))
+            .filter((movie): movie is Movie => movie !== null)
+            .slice(0, limit)
+        ),
         catchError(this.handleError<Movie[]>('getPopularMovies', []))
       );
     });
@@ -165,7 +172,12 @@ export class MovieService {
         .set('page', page.toString());
       const url = `${this.baseUrl}/trending/movie/${timeWindow}`;
       return this.http.get<TmdbMovieListResponse>(url, { ...this.httpOptions, params }).pipe(
-        map(response => response.results.slice(0, limit).map(m => this.mapTmdbMovieToAppMovie(m))),
+        map(response =>
+          response.results
+            .map(m => this.mapTmdbMovieToAppMovie(m))
+            .filter((movie): movie is Movie => movie !== null)
+            .slice(0, limit)
+        ),
         catchError(this.handleError<Movie[]>('getTrendingMovies', []))
       );
     });
@@ -178,7 +190,10 @@ export class MovieService {
         .set('append_to_response', 'videos,credits');
       const url = `${this.baseUrl}/movie/${id}`;
       return this.http.get<TmdbMovieResult>(url, { ...this.httpOptions, params }).pipe(
-        map(response => this.mapTmdbMovieToAppMovie(response)),
+        map(response => {
+          const movie = this.mapTmdbMovieToAppMovie(response);
+          return movie || undefined;
+        }),
         catchError(this.handleError<Movie | undefined>(`getMovieDetails id=${id}`))
       );
     });
@@ -196,7 +211,11 @@ export class MovieService {
         .set('include_adult', 'false');
       const url = `${this.baseUrl}/search/movie`;
       return this.http.get<TmdbMovieListResponse>(url, { ...this.httpOptions, params }).pipe(
-        map(response => response.results.map(m => this.mapTmdbMovieToAppMovie(m))),
+        map(response =>
+          response.results
+            .map(m => this.mapTmdbMovieToAppMovie(m))
+            .filter((movie): movie is Movie => movie !== null)
+        ),
         catchError(this.handleError<Movie[]>('searchMovies', []))
       );
     });
