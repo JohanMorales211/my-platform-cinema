@@ -31,6 +31,11 @@ interface TmdbTvResult {
   credits?: { cast: TmdbActor[] };
 }
 
+interface TmdbVideoListResponse {
+  id: number;
+  results: TmdbVideo[];
+}
+
 interface TmdbTvListResponse {
   page: number;
   results: TmdbTvResult[];
@@ -198,12 +203,12 @@ export class SeriesService {
 
       return this.http.get<TmdbTvListResponse>(url, { ...this.httpOptions, params }).pipe(
         map(response => {
-          const series = response.results
+          const seriesList = response.results
             .map(s => this.mapTmdbTvToAppSeries(s))
             .filter((s): s is Series => s !== null);
 
           return {
-            series: series,
+            series: seriesList,
             currentPage: response.page,
             totalPages: Math.min(response.total_pages, 500),
             totalResults: response.total_results
@@ -232,12 +237,39 @@ export class SeriesService {
 
   getSeriesDetails(id: string): Observable<Series | undefined> {
     return this.ensureConfigLoaded(() => {
-      const params = new HttpParams().set('language', 'es-ES').set('append_to_response', 'videos,credits');
-      const url = `${this.baseUrl}/tv/${id}`;
-      return this.http.get<TmdbTvResult>(url, { ...this.httpOptions, params }).pipe(
-        map(response => {
-          const series = this.mapTmdbTvToAppSeries(response);
-          return series || undefined;
+      const spanishParams = new HttpParams()
+        .set('language', 'es-ES')
+        .set('append_to_response', 'videos,credits,genres');
+      const spanishDetailsUrl = `${this.baseUrl}/tv/${id}`;
+
+      return this.http.get<TmdbTvResult>(spanishDetailsUrl, { ...this.httpOptions, params: spanishParams }).pipe(
+        switchMap(tmdbSeriesInSpanish => {
+          let seriesItem = this.mapTmdbTvToAppSeries(tmdbSeriesInSpanish);
+
+          if (!seriesItem) {
+            return of(undefined);
+          }
+
+          if (seriesItem.trailerUrl) {
+            return of(seriesItem);
+          } else {
+            const videosUrl = `${this.baseUrl}/tv/${id}/videos`;
+            const englishVideoParams = new HttpParams();
+
+            return this.http.get<TmdbVideoListResponse>(videosUrl, { ...this.httpOptions, params: englishVideoParams }).pipe(
+              map(englishVideoResponse => {
+                const englishTrailerUrl = this.extractTrailerUrl(englishVideoResponse.results);
+                if (englishTrailerUrl) {
+                  seriesItem!.trailerUrl = englishTrailerUrl;
+                }
+                return seriesItem;
+              }),
+              catchError(err => {
+                console.warn(`Error fetching videos in default/English language for series ${id}. Returning series with original (es-ES) details:`, err);
+                return of(seriesItem);
+              })
+            );
+          }
         }),
         catchError(this.handleError<Series | undefined>(`getSeriesDetails id=${id}`))
       );

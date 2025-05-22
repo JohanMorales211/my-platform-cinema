@@ -30,6 +30,11 @@ interface TmdbMovieResult {
   credits?: { cast: TmdbActor[] };
 }
 
+interface TmdbVideoListResponse {
+  id: number;
+  results: TmdbVideo[];
+}
+
 interface TmdbMovieListResponse {
   page: number;
   results: TmdbMovieResult[];
@@ -237,14 +242,40 @@ export class MovieService {
 
   getMovieDetails(id: string): Observable<Movie | undefined> {
     return this.ensureConfigLoaded(() => {
-      const params = new HttpParams()
+      const spanishParams = new HttpParams()
         .set('language', 'es-ES')
         .set('append_to_response', 'videos,credits,genres');
-      const url = `${this.baseUrl}/movie/${id}`;
-      return this.http.get<TmdbMovieResult>(url, { ...this.httpOptions, params }).pipe(
-        map(response => {
-          const movie = this.mapTmdbMovieToAppMovie(response);
-          return movie || undefined;
+      const spanishDetailsUrl = `${this.baseUrl}/movie/${id}`;
+
+      return this.http.get<TmdbMovieResult>(spanishDetailsUrl, { ...this.httpOptions, params: spanishParams }).pipe(
+        switchMap(tmdbMovieInSpanish => {
+          let movie = this.mapTmdbMovieToAppMovie(tmdbMovieInSpanish);
+
+          if (!movie) {
+            return of(undefined);
+          }
+
+          if (movie.trailerUrl) {
+            return of(movie);
+          } else {
+            const videosUrl = `${this.baseUrl}/movie/${id}/videos`;
+            const englishVideoParams = new HttpParams();
+
+
+            return this.http.get<TmdbVideoListResponse>(videosUrl, { ...this.httpOptions, params: englishVideoParams }).pipe(
+              map(englishVideoResponse => {
+                const englishTrailerUrl = this.extractTrailerUrl(englishVideoResponse.results);
+                if (englishTrailerUrl) {
+                  movie!.trailerUrl = englishTrailerUrl;
+                }
+                return movie;
+              }),
+              catchError(err => {
+                console.warn(`Error fetching videos in default/English language for movie ${id}. Returning movie with original (es-ES) details:`, err);
+                return of(movie);
+              })
+            );
+          }
         }),
         catchError(this.handleError<Movie | undefined>(`getMovieDetails id=${id}`))
       );
