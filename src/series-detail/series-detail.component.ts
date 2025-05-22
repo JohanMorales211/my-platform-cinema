@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CommonModule, Location } from '@angular/common';
 import { Series } from '../app/series-data';
-import { SeriesService } from '../app/series.service';
+import { SeriesService } from '../app/services/series.service';
 import { Subscription } from 'rxjs';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 

@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CommonModule, Location } from '@angular/common';
 import { Movie } from '../movie-data';
-import { MovieService } from '../movie.service';
+import { MovieService } from '../services/movie.service';
 import { Subscription } from 'rxjs';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 

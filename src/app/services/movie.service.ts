@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, of, forkJoin } from 'rxjs';
 import { map, catchError, tap, switchMap } from 'rxjs/operators';
-import { Movie } from './movie-data';
+import { Movie } from '../movie-data';
 
 interface TmdbConfiguration {
   images: {

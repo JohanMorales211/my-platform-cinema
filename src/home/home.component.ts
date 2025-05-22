@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, Router, ActivatedRoute, NavigationExtras, Params } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Movie } from '../app/movie-data';
-import { MovieService, PopularMoviesResponse, TmdbGenre } from '../app/movie.service';
+import { MovieService, PopularMoviesResponse, TmdbGenre } from '../app/services/movie.service';
 import { Subscription } from 'rxjs';
 
 @Component({

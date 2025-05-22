@@ -1,8 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { MovieService } from '../movie.service';
-import { SeriesService } from '../series.service';
+import { MovieService } from '../services/movie.service';
+import { SeriesService } from '../services/series.service';
 import { Movie } from '../movie-data';
 import { Series } from '../series-data';
 import { Subscription, forkJoin, of } from 'rxjs';

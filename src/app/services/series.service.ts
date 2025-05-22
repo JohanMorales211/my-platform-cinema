@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, of, forkJoin } from 'rxjs';
 import { map, catchError, tap, switchMap } from 'rxjs/operators';
-import { Series } from './series-data';
+import { Series } from '../series-data';
 
 interface TmdbConfiguration {
   images: {
