@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <header class="app-header" [class.menu-open]="isMenuOpen">
   <div class="header-container">
     <a routerLink="/home" class="logo" (click)="isMenuOpen = false">
@@ -28,8 +29,8 @@
         placeholder="Buscar películas o series..."
         [(ngModel)]="searchQuery"
         (keyup.enter)="onSearch()"
-        aria-label="Campo de búsqueda de películas"
-      > <!-- <-- ¡Aquí estaba el error! Faltaba el '>' de cierre -->
+        aria-label="Campo de búsqueda de películas o series"
+      >
       <button type="button" aria-label="Iniciar búsqueda" (click)="onSearch()">
         <i class="fas fa-search"></i>
       </button>

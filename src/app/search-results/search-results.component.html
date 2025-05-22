@@ -1,21 +1,51 @@
 <div class="search-results-container">
-  <h1 *ngIf="currentQuery">Resultados para: "{{ currentQuery }}"</h1>
-  <h1 *ngIf="!currentQuery && !isLoading">Realiza una búsqueda</h1>
+  <h1 *ngIf="currentQuery">Resultados para: <span class="search-query-term">"{{ currentQuery }}"</span></h1>
+  <h1 *ngIf="!currentQuery && !isLoading && !error">Realiza una búsqueda para ver resultados</h1>
 
-  <div *ngIf="isLoading" class="loading-indicator">Buscando películas...</div>
+  <div *ngIf="isLoading" class="loading-indicator">Buscando...</div>
   <div *ngIf="error && !isLoading" class="error-message">{{ error }}</div>
 
-  <div *ngIf="!isLoading && !error && movies.length > 0" class="movies-grid-search">
-    <a *ngFor="let movie of movies" [routerLink]="['/pelicula', movie.id]" class="movie-card-search">
-      <img [src]="movie.posterUrl" [alt]="movie.title" onerror="this.src='assets/images/placeholder_poster.png'">
-      <div class="movie-info-search">
-        <h3>{{ movie.title }}</h3>
-        <p class="year-search">{{ movie.year }}</p>
+  <ng-container *ngIf="!isLoading && !error && currentQuery">
+    <section class="results-section" *ngIf="allMoviesResults.length > 0">
+      <h2>Películas <span class="results-count">({{ allMoviesResults.length }} encontrada{{ allMoviesResults.length === 1 ? '' : 's' }})</span></h2>
+      <div class="movies-grid-search">
+        <a *ngFor="let movie of displayedMovies" [routerLink]="['/pelicula', movie.id]" class="movie-card-search">
+          <img [src]="movie.posterUrl" [alt]="movie.title" onerror="this.src='assets/images/placeholder_poster.png'">
+          <div class="movie-info-search">
+            <h3>{{ movie.title }}</h3>
+            <p class="year-search">{{ movie.year }}</p>
+          </div>
+        </a>
       </div>
-    </a>
-  </div>
+      <div class="expand-button-container" *ngIf="allMoviesResults.length > initialItemsToShow">
+        <button (click)="toggleMoviesExpansion()" class="btn-expand">
+          <i class="fas" [ngClass]="moviesExpanded ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+          {{ moviesExpanded ? 'Ver menos películas' : 'Ver más películas' }}
+        </button>
+      </div>
+    </section>
 
-  <div *ngIf="!isLoading && !error && movies.length === 0 && currentQuery" class="no-results-message">
-    No se encontraron resultados para "{{ currentQuery }}". Intenta con otros términos.
-  </div>
+    <section class="results-section" *ngIf="allSeriesResults.length > 0">
+      <h2>Series <span class="results-count">({{ allSeriesResults.length }} encontrada{{ allSeriesResults.length === 1 ? '' : 's' }})</span></h2>
+      <div class="movies-grid-search">
+        <a *ngFor="let seriesItem of displayedSeries" [routerLink]="['/series', seriesItem.id]" class="movie-card-search">
+          <img [src]="seriesItem.posterUrl" [alt]="seriesItem.title" onerror="this.src='assets/images/placeholder_poster.png'">
+          <div class="movie-info-search">
+            <h3>{{ seriesItem.title }}</h3>
+            <p class="year-search">{{ seriesItem.firstAirYear }}</p>
+          </div>
+        </a>
+      </div>
+      <div class="expand-button-container" *ngIf="allSeriesResults.length > initialItemsToShow">
+        <button (click)="toggleSeriesExpansion()" class="btn-expand">
+          <i class="fas" [ngClass]="seriesExpanded ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+          {{ seriesExpanded ? 'Ver menos series' : 'Ver más series' }}
+        </button>
+      </div>
+    </section>
+
+    <div *ngIf="allMoviesResults.length === 0 && allSeriesResults.length === 0 && currentQuery" class="no-results-message">
+      No se encontraron películas ni series para "{{ currentQuery }}". Intenta con otros términos.
+    </div>
+  </ng-container>
 </div>
