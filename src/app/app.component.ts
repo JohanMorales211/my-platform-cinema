@@ -17,7 +17,7 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'Johan Films';
+  title = 'Filmix';
   isMenuOpen = false;
   searchQuery: string = '';
 
