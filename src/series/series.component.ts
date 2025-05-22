@@ -1,15 +1,15 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, Router, ActivatedRoute, NavigationExtras } from '@angular/router';
+import { RouterLink, Router, ActivatedRoute, Params } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { Series } from '../app/series-data';
-import { SeriesService, PopularSeriesResponse } from '../app/series.service';
+import { SeriesService, PopularSeriesResponse, TmdbTvGenre } from '../app/series.service';
 import { Subscription } from 'rxjs';
-import { take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-series',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, FormsModule],
   templateUrl: './series.component.html',
   styleUrls: ['./series.component.css']
 })
@@ -23,17 +23,23 @@ export class SeriesComponent implements OnInit, OnDestroy {
   totalResultsLatest: number = 0;
   
   seriesPerPage: number = 12;
-  
   readonly maxPageLimit: number = 50;
 
   isLoadingLatest: boolean = true;
   isLoadingFeaturedDay: boolean = true;
   isLoadingFeaturedWeek: boolean = true;
+  isLoadingGenres: boolean = true;
 
   errorLatest: string | null = null;
   errorFeatured: string | null = null;
+  errorGenres: string | null = null;
 
   activeTab: 'day' | 'week' = 'day';
+
+  availableGenres: TmdbTvGenre[] = [];
+  selectedGenre: string = '';
+  availableYears: number[] = [];
+  selectedYear: string = '';
 
   private subscriptions = new Subscription();
 
@@ -52,45 +58,78 @@ export class SeriesComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.subscriptions.add(
-      this.activatedRoute.queryParamMap.pipe(take(1)).subscribe(params => {
-        const pageFromQuery = params.get('page');
-        if (pageFromQuery) {
-          const pageNum = parseInt(pageFromQuery, 10);
-          if (!isNaN(pageNum) && pageNum > 0) {
-            this.currentPageLatest = pageNum;
-          }
-        }
-        this.loadLatestSeries(this.currentPageLatest);
-      })
-    );
+    this.loadInitialDataForFilters();
+    this.subscribeToQueryParams();
     this.loadFeaturedSeries();
   }
 
-  loadLatestSeries(page: number): void {
+  loadInitialDataForFilters(): void {
+    this.isLoadingGenres = true;
+    this.errorGenres = null;
+    this.subscriptions.add(
+      this.seriesService.getSeriesGenres().subscribe({
+        next: genres => {
+          this.availableGenres = genres;
+          this.isLoadingGenres = false;
+        },
+        error: err => {
+          console.error('Error al cargar géneros de series:', err);
+          this.errorGenres = 'No se pudieron cargar los géneros.';
+          this.isLoadingGenres = false;
+        }
+      })
+    );
+    this.populateYears();
+  }
+
+  populateYears(): void {
+    const currentYear = new Date().getFullYear();
+    const startYear = 1940;
+    this.availableYears = [];
+    for (let year = currentYear + 1; year >= startYear; year--) {
+      this.availableYears.push(year);
+    }
+  }
+
+  subscribeToQueryParams(): void {
+    this.subscriptions.add(
+      this.activatedRoute.queryParamMap.subscribe(params => {
+        const pageFromQuery = params.get('page');
+        const genreFromQuery = params.get('genre');
+        const yearFromQuery = params.get('year');
+
+        const newPage = pageFromQuery ? parseInt(pageFromQuery, 10) : 1;
+        
+        this.currentPageLatest = (isNaN(newPage) || newPage < 1) ? 1 : newPage;
+        this.selectedGenre = genreFromQuery || '';
+        this.selectedYear = yearFromQuery || '';
+        
+        this.loadLatestSeries(this.currentPageLatest, this.selectedGenre, this.selectedYear);
+      })
+    );
+  }
+
+  loadLatestSeries(page: number, genreId?: string, year?: string): void {
     this.isLoadingLatest = true;
     this.errorLatest = null;
     
-    const latestSub = this.seriesService.getPopularSeries(page).subscribe({ 
+    const yearParam = year ? parseInt(year, 10) : undefined;
+
+    const latestSub = this.seriesService.getPopularSeries(page, genreId || undefined, yearParam).subscribe({ 
       next: (data: PopularSeriesResponse) => {
         this.latestSeries = data.series.slice(0, this.seriesPerPage);
 
-        console.log('SeriesComponent: Series recibidas de TMDB (originales y válidas):', data.series.length);
+        console.log('SeriesComponent: Series recibidas de TMDB (filtradas/populares):', data.series.length);
         console.log('SeriesComponent: Series mostradas en pantalla (después de slice a', this.seriesPerPage, '):', this.latestSeries.length);
-        if (this.latestSeries.length === 0) {
-            console.warn('SeriesComponent: La lista de series populares está vacía o todas fueron filtradas por el servicio/slice.');
+        if (this.latestSeries.length === 0 && data.series.length > 0) {
+            console.warn('SeriesComponent: La lista de series se vació después del slice. Original:', data.series.length, 'Mostradas:', this.latestSeries.length);
         }
+
 
         this.currentPageLatest = data.currentPage;
-        this.totalPagesLatest = Math.min(data.totalPages, 500);
-        this.totalPagesLatest = Math.min(this.totalPagesLatest, this.maxPageLimit);
+        this.totalPagesLatest = Math.min(data.totalPages, 500, this.maxPageLimit);
         this.totalResultsLatest = data.totalResults;
         this.isLoadingLatest = false;
-
-        const currentQueryPage = this.activatedRoute.snapshot.queryParamMap.get('page');
-        if (currentQueryPage !== page.toString() || (!currentQueryPage && page !== 1)) {
-            this.updateUrlWithPageQuery(page);
-        }
       },
       error: (err) => {
         console.error('Error al cargar últimas series:', err);
@@ -101,13 +140,28 @@ export class SeriesComponent implements OnInit, OnDestroy {
     this.subscriptions.add(latestSub);
   }
 
-  private updateUrlWithPageQuery(page: number): void {
-    const navigationExtras: NavigationExtras = {
-      queryParams: { page: page > 1 ? page : null },
-      queryParamsHandling: 'merge',
+  onFiltersChanged(): void {
+    this.updateUrlWithPageAndFilters(1, this.selectedGenre, this.selectedYear);
+  }
+
+  clearFilters(): void {
+    this.selectedGenre = '';
+    this.selectedYear = '';
+    this.updateUrlWithPageAndFilters(1);
+  }
+
+  private updateUrlWithPageAndFilters(page: number, genre?: string, year?: string): void {
+    const queryParams: Params = {};
+    if (page > 1) queryParams['page'] = page;
+    if (genre) queryParams['genre'] = genre;
+    if (year) queryParams['year'] = year;
+
+    this.router.navigate([], {
+      relativeTo: this.activatedRoute,
+      queryParams: queryParams,
+      queryParamsHandling: '',
       replaceUrl: true
-    };
-    this.router.navigate([], navigationExtras);
+    });
   }
 
   loadFeaturedSeries(): void {
@@ -116,16 +170,10 @@ export class SeriesComponent implements OnInit, OnDestroy {
     this.errorFeatured = null;
     const featuredSub = this.seriesService.getHomeSeriesData().subscribe({ 
         next: (data) => {
-            console.log('SeriesComponent: Series destacadas del día:', data.trendingDay.length, 'series.');
-            console.log('SeriesComponent: Series destacadas de la semana:', data.trendingWeek.length, 'series.');
-
             this.featuredDaySeries = data.trendingDay;
             this.featuredWeekSeries = data.trendingWeek;
             this.isLoadingFeaturedDay = false;
             this.isLoadingFeaturedWeek = false;
-            if (data.trendingDay.length === 0 && data.trendingWeek.length === 0) {
-                console.warn("Listas de series destacadas están vacías.");
-            }
         },
         error: (err) => {
             console.error('Error al cargar series destacadas:', err);
@@ -143,13 +191,13 @@ export class SeriesComponent implements OnInit, OnDestroy {
 
   goToPreviousPageLatest(): void {
     if (this.currentPageLatest > 1) {
-      this.loadLatestSeries(this.currentPageLatest - 1);
+      this.updateUrlWithPageAndFilters(this.currentPageLatest - 1, this.selectedGenre, this.selectedYear);
     }
   }
 
   goToNextPageLatest(): void {
     if (this.currentPageLatest < this.totalPagesLatest && this.currentPageLatest < this.maxPageLimit) {
-      this.loadLatestSeries(this.currentPageLatest + 1);
+      this.updateUrlWithPageAndFilters(this.currentPageLatest + 1, this.selectedGenre, this.selectedYear);
     }
   }
 

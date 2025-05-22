@@ -57,6 +57,15 @@ interface TmdbActor {
   profile_path: string | null;
 }
 
+export interface TmdbTvGenre {
+  id: number;
+  name: string;
+}
+interface TmdbTvGenreResponse {
+  genres: TmdbTvGenre[];
+}
+
+
 export interface PopularSeriesResponse {
   series: Series[];
   currentPage: number;
@@ -110,23 +119,21 @@ export class SeriesService {
     } else {
       return this.configuration$.pipe(
         switchMap(config => {
-          if (config) {
-            return requestFn();
-          } else {
-            console.error('TMDB configuration not loaded for SeriesService, API calls might fail or use default image paths.');
-            return requestFn();
+          if (!config) {
+             console.error('TMDB configuration not loaded for SeriesService. API calls might use default image paths or fail.');
           }
+          return requestFn();
         })
       );
     }
   }
 
   private mapTmdbTvToAppSeries(tmdbTv: TmdbTvResult): Series | null {
-    if (!tmdbTv.poster_path) {
-      return null;
-    }
 
-    const posterPath = `${this.imageBaseUrl}${this.posterSize}${tmdbTv.poster_path}`;
+    const posterPath = tmdbTv.poster_path
+        ? `${this.imageBaseUrl}${this.posterSize}${tmdbTv.poster_path}`
+        : 'assets/images/placeholder_poster.png';
+
     const backdropPath = tmdbTv.backdrop_path ? `${this.imageBaseUrl}${this.backdropSize}${tmdbTv.backdrop_path}` : undefined;
 
     return {
@@ -155,12 +162,39 @@ export class SeriesService {
     return anyTrailer ? `https://www.youtube.com/embed/${anyTrailer.key}` : undefined;
   }
 
-  getPopularSeries(page: number = 1): Observable<PopularSeriesResponse> {
+  getSeriesGenres(): Observable<TmdbTvGenre[]> {
     return this.ensureConfigLoaded(() => {
-      const params = new HttpParams()
+      const params = new HttpParams().set('language', 'es-ES');
+      const url = `${this.baseUrl}/genre/tv/list`;
+      return this.http.get<TmdbTvGenreResponse>(url, { ...this.httpOptions, params }).pipe(
+        map(response => response.genres || []),
+        catchError(this.handleError<TmdbTvGenre[]>('getSeriesGenres', []))
+      );
+    });
+  }
+
+  getPopularSeries(
+    page: number = 1,
+    genreId?: string,
+    year?: number
+  ): Observable<PopularSeriesResponse> {
+    return this.ensureConfigLoaded(() => {
+      let params = new HttpParams()
         .set('language', 'es-ES')
         .set('page', page.toString());
-      const url = `${this.baseUrl}/tv/popular`;
+
+      let url = `${this.baseUrl}/tv/popular`;
+
+      if (genreId || year) {
+        url = `${this.baseUrl}/discover/tv`;
+        params = params.set('sort_by', 'popularity.desc');
+        if (genreId) {
+          params = params.set('with_genres', genreId);
+        }
+        if (year) {
+          params = params.set('first_air_date_year', year.toString());
+        }
+      }
 
       return this.http.get<TmdbTvListResponse>(url, { ...this.httpOptions, params }).pipe(
         map(response => {
@@ -171,7 +205,7 @@ export class SeriesService {
           return {
             series: series,
             currentPage: response.page,
-            totalPages: response.total_pages > 500 ? 500 : response.total_pages,
+            totalPages: Math.min(response.total_pages, 500),
             totalResults: response.total_results
           };
         }),
@@ -248,11 +282,13 @@ export class SeriesService {
 
   private handleError<T>(operation = 'operation', result?: T) {
     return (error: any): Observable<T> => {
-      console.error(`${operation} failed: Status ${error.status} ${error.statusText}`);
+      console.error(`${operation} failed: Status ${error.status || 'unknown'} ${error.statusText || 'unknown error'}`);
       if (error.error && typeof error.error === 'object') {
-        console.error('Error details:', error.error);
+        console.error('Error details:', JSON.stringify(error.error, null, 2));
       } else if (error.message) {
         console.error('Error message:', error.message);
+      } else {
+        console.error('Full error object:', JSON.stringify(error, null, 2));
       }
       return of(result as T);
     };

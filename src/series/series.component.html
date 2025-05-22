@@ -1,9 +1,40 @@
 <main class="app-main-content">
   <div class="content-wrapper">
     <section class="latest-movies">
-      <h1>Últimas series publicadas</h1>
+      
+      <div class="section-header-with-filters">
+        <h1>Últimas series publicadas</h1>
+        <div class="filters-container">
+          <div class="filter-group">
+            <label for="genre-filter-series">Género:</label>
+            <select id="genre-filter-series" [(ngModel)]="selectedGenre" (ngModelChange)="onFiltersChanged()" [disabled]="isLoadingGenres || isLoadingLatest">
+              <option value="">Todos</option>
+              <option *ngFor="let genre of availableGenres" [value]="genre.id">{{ genre.name }}</option>
+            </select>
+            <div *ngIf="isLoadingGenres" class="filter-loading-spinner"></div>
+            <div *ngIf="errorGenres && !isLoadingGenres" class="filter-error-message">{{ errorGenres }}</div>
+          </div>
+
+          <div class="filter-group">
+            <label for="year-filter-series">Año:</label>
+            <select id="year-filter-series" [(ngModel)]="selectedYear" (ngModelChange)="onFiltersChanged()" [disabled]="isLoadingLatest">
+              <option value="">Todos</option>
+              <option *ngFor="let year of availableYears" [value]="year">{{ year }}</option>
+            </select>
+          </div>
+          <button
+            class="btn-clear-filters"
+            (click)="clearFilters()"
+            [disabled]="(!selectedGenre && !selectedYear) || isLoadingLatest"
+            title="Limpiar filtros">
+            <i class="fas fa-times"></i> Limpiar
+          </button>
+        </div>
+      </div>
+
       <p class="section-description">
-        Explora nuestra colección más reciente de series. Usa la paginación para descubrir más títulos. También puedes visitar la sección de <strong>series tendencia del día</strong> y <strong>tendencia de la semana</strong>.
+        Explora nuestra colección más reciente de series. Usa la paginación para descubrir más títulos. 
+        También puedes filtrar por género y año, y visitar la sección de <strong>series tendencia del día</strong> y <strong>tendencia de la semana</strong>.
       </p>
 
       <div *ngIf="isLoadingLatest" class="loading-indicator">Cargando series...</div>
@@ -17,7 +48,10 @@
         </a>
       </div>
 
-      <div *ngIf="!isLoadingLatest && !errorLatest && latestSeries.length === 0 && !errorLatest" class="no-movies-message">
+      <div *ngIf="!isLoadingLatest && !errorLatest && latestSeries.length === 0 && (selectedGenre || selectedYear)" class="no-movies-message">
+        No hay series que coincidan con los filtros seleccionados.
+      </div>
+      <div *ngIf="!isLoadingLatest && !errorLatest && latestSeries.length === 0 && !(selectedGenre || selectedYear) && !errorLatest" class="no-movies-message">
         No hay series populares disponibles en este momento.
       </div>
 
@@ -29,12 +63,12 @@
           <i class="fas fa-chevron-left"></i> Anterior
         </button>
         <span class="pagination-info">
-          Página {{ currentPageLatest }} de {{ totalPagesLatest > maxPageLimit ? maxPageLimit : totalPagesLatest }}
+          Página {{ currentPageLatest }} de {{ totalPagesLatest }}
         </span>
         <button
           class="pagination-button"
           (click)="goToNextPageLatest()"
-          [disabled]="currentPageLatest >= totalPagesLatest || currentPageLatest >= maxPageLimit">
+          [disabled]="currentPageLatest >= totalPagesLatest">
           Siguiente <i class="fas fa-chevron-right"></i>
         </button>
       </div>
