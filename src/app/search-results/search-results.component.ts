@@ -6,7 +6,7 @@ import { SeriesService } from '../services/series.service';
 import { Movie } from '../movie-data';
 import { Series } from '../series-data';
 import { Subscription, forkJoin, of } from 'rxjs';
-import { switchMap, tap, catchError } from 'rxjs/operators';
+import { switchMap, tap, catchError, map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-search-results',
@@ -26,6 +26,9 @@ export class SearchResultsComponent implements OnInit, OnDestroy {
   seriesExpanded: boolean = false;
 
   readonly initialItemsToShow: number = 12;
+  readonly placeholderPosterPath: string = 'assets/images/placeholder_poster.png';
+  readonly placeholderDescription: string = 'Descripción no disponible.';
+
 
   isLoading: boolean = false;
   error: string | null = null;
@@ -51,7 +54,7 @@ export class SearchResultsComponent implements OnInit, OnDestroy {
       }),
       switchMap(params => {
         const query = params.get('q');
-        if (query) {
+        if (query && query.trim()) {
           return forkJoin({
             movies: this.movieService.searchMovies(query).pipe(
               catchError(() => of([] as Movie[]))
@@ -62,11 +65,27 @@ export class SearchResultsComponent implements OnInit, OnDestroy {
           });
         }
         return of({ movies: [] as Movie[], series: [] as Series[] });
+      }),
+      map(results => {
+        const filteredMovies = results.movies.filter(movie => 
+          movie.description && 
+          movie.description.trim() !== this.placeholderDescription &&
+          movie.posterUrl && 
+          !movie.posterUrl.endsWith(this.placeholderPosterPath)
+        );
+
+        const filteredSeries = results.series.filter(seriesItem => 
+          seriesItem.description && 
+          seriesItem.description.trim() !== this.placeholderDescription &&
+          seriesItem.posterUrl && 
+          !seriesItem.posterUrl.endsWith(this.placeholderPosterPath)
+        );
+        return { movies: filteredMovies, series: filteredSeries };
       })
     ).subscribe({
-      next: (results) => {
-        this.allMoviesResults = results.movies;
-        this.allSeriesResults = results.series;
+      next: (filteredResults) => {
+        this.allMoviesResults = filteredResults.movies;
+        this.allSeriesResults = filteredResults.series;
         this.updateDisplayedItems();
         this.isLoading = false;
       },

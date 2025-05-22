@@ -13,7 +13,12 @@
           <img [src]="movie.posterUrl" [alt]="movie.title" onerror="this.src='assets/images/placeholder_poster.png'">
           <div class="movie-info-search">
             <h3>{{ movie.title }}</h3>
-            <p class="year-search">{{ movie.year }}</p>
+            <div class="meta-info-search">
+              <span class="year-search">{{ movie.year }}</span>
+              <span class="rating-search" *ngIf="movie.ratingOutOf10">
+                <i class="fas fa-star"></i> {{ movie.ratingOutOf10 }}
+              </span>
+            </div>
           </div>
         </a>
       </div>
@@ -32,7 +37,12 @@
           <img [src]="seriesItem.posterUrl" [alt]="seriesItem.title" onerror="this.src='assets/images/placeholder_poster.png'">
           <div class="movie-info-search">
             <h3>{{ seriesItem.title }}</h3>
-            <p class="year-search">{{ seriesItem.firstAirYear }}</p>
+            <div class="meta-info-search">
+              <span class="year-search">{{ seriesItem.firstAirYear }}</span>
+              <span class="rating-search" *ngIf="seriesItem.ratingOutOf10">
+                <i class="fas fa-star"></i> {{ seriesItem.ratingOutOf10 }}
+              </span>
+            </div>
           </div>
         </a>
       </div>
