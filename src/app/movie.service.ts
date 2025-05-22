@@ -56,6 +56,13 @@ interface TmdbActor {
   profile_path: string | null;
 }
 
+export interface PopularMoviesResponse {
+  movies: Movie[];
+  currentPage: number;
+  totalPages: number;
+  totalResults: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -146,18 +153,27 @@ export class MovieService {
     return anyTrailer ? `https://www.youtube.com/embed/${anyTrailer.key}` : undefined;
   }
 
-  getPopularMovies(page: number = 1, limit: number = 12): Observable<Movie[]> {
+  getPopularMovies(page: number = 1, limit: number = 12): Observable<PopularMoviesResponse> {
     return this.ensureConfigLoaded(() => {
-      const params = new HttpParams().set('language', 'es-ES').set('page', page.toString());
+      const params = new HttpParams()
+        .set('language', 'es-ES')
+        .set('page', page.toString());
       const url = `${this.baseUrl}/movie/popular`;
+
       return this.http.get<TmdbMovieListResponse>(url, { ...this.httpOptions, params }).pipe(
-        map(response =>
-          response.results
+        map(response => {
+          const movies = response.results
             .map(m => this.mapTmdbMovieToAppMovie(m))
-            .filter((movie): movie is Movie => movie !== null)
-            .slice(0, limit)
-        ),
-        catchError(this.handleError<Movie[]>('getPopularMovies', []))
+            .filter((movie): movie is Movie => movie !== null);
+
+          return {
+            movies: movies.slice(0, limit),
+            currentPage: response.page,
+            totalPages: response.total_pages > 500 ? 500 : response.total_pages,
+            totalResults: response.total_results
+          };
+        }),
+        catchError(this.handleError<PopularMoviesResponse>('getPopularMovies', { movies: [], currentPage: 1, totalPages: 0, totalResults: 0 }))
       );
     });
   }
@@ -214,16 +230,15 @@ export class MovieService {
     });
   }
 
-  getHomeMoviesData(): Observable<{ popular: Movie[], trendingDay: Movie[], trendingWeek: Movie[] }> {
+  getHomeMoviesData(): Observable<{ trendingDay: Movie[], trendingWeek: Movie[] }> {
     return this.ensureConfigLoaded(() => {
       return forkJoin({
-        popular: this.getPopularMovies(1, 12),
         trendingDay: this.getTrendingMovies('day', 1, 5),
         trendingWeek: this.getTrendingMovies('week', 1, 5)
       }).pipe(
         catchError(err => {
-          console.error('Error fetching home movies data', err);
-          return of({ popular: [], trendingDay: [], trendingWeek: [] });
+          console.error('Error fetching home movies data (trending)', err);
+          return of({ trendingDay: [], trendingWeek: [] });
         })
       );
     });

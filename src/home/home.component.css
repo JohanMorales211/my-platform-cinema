@@ -14,40 +14,6 @@
   box-sizing: border-box;
 }
 
-.page-introduction {
-  background-color: var(--content-background);
-  padding: 25px;
-  border-radius: 8px;
-  margin-bottom: 35px;
-  text-align: left;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.25);
-}
-
-.page-introduction h2 {
-  font-size: 1.8em;
-  color: var(--primary-orange);
-  margin-top: 0;
-  margin-bottom: 15px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.page-introduction p {
-  font-size: 1.05em;
-  color: var(--medium-text);
-  line-height: 1.7;
-  margin: 0;
-  position: relative;
-  min-height: 1.5em;
-  word-break: break-word;
-  overflow-wrap: break-word;
-}
-
-.page-introduction p span strong {
-  color: var(--light-text);
-  font-weight: 600;
-}
-
 .latest-movies {
   flex: 3;
 }
@@ -83,6 +49,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 25px;
+  margin-bottom: 40px;
 }
 
 .movie-card {
@@ -146,6 +113,7 @@
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  align-self: flex-start;
 }
 .featured-movies h2 {
     font-size: 1.6em;
@@ -236,6 +204,51 @@
   font-weight: bold;
 }
 
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 30px;
+  padding: 15px 0;
+  border-top: 1px solid var(--border-color);
+}
+
+.pagination-button {
+  background-color: var(--primary-orange);
+  color: var(--light-text);
+  border: none;
+  padding: 10px 18px;
+  margin: 0 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, opacity 0.3s ease;
+  font-size: 0.95em;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pagination-button:hover:not(:disabled) {
+  background-color: #e65c00;
+}
+
+.pagination-button:disabled {
+  background-color: var(--muted-text);
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pagination-button i {
+  font-size: 0.9em;
+}
+
+.pagination-info {
+  color: var(--medium-text);
+  font-size: 1em;
+  font-weight: 500;
+  margin: 0 10px;
+}
+
 @media (max-width: 768px) {
   .content-wrapper {
     flex-direction: column;
@@ -249,17 +262,6 @@
     flex: none;
     padding: 15px;
     box-sizing: border-box;
-  }
-
-  .page-introduction {
-    padding: 20px;
-    margin-bottom: 30px;
-  }
-  .page-introduction h2 {
-    font-size: 1.6em;
-  }
-  .page-introduction p {
-    font-size: 1em;
   }
 
   .movies-grid {
@@ -294,17 +296,6 @@
       right: 8px;
   }
 
-  .page-introduction {
-    padding: 15px;
-    margin-bottom: 25px;
-  }
-  .page-introduction h2 {
-    font-size: 1.4em;
-  }
-  .page-introduction p {
-    font-size: 0.9em;
-  }
-
   .section-description {
     font-size: 0.85em;
     padding: 12px;
@@ -331,5 +322,23 @@
   .tab-button {
       padding: 10px 12px;
       font-size: 0.9em;
+  }
+
+  .pagination-controls {
+    flex-direction: column;
+    gap: 15px;
+  }
+  .pagination-button {
+    width: 100%;
+    max-width: 280px;
+    margin-left: auto;
+    margin-right: auto;
+    justify-content: center;
+    padding: 12px;
+    font-size: 1em;
+  }
+  .pagination-info {
+    order: -1;
+    margin-bottom: 5px;
   }
 }

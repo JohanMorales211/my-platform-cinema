@@ -3,12 +3,12 @@
     <section class="latest-movies">
       <h1>Últimas películas publicadas</h1>
       <p class="section-description">
-        En esta sección tendrás las últimas películas publicadas, cada vez que subimos una película nueva, aquí verás el contenido más reciente y actualizado. Sin embargo, puedes visitar la sección de <strong>películas tendencia del día</strong> y <strong>tendencia de la semana</strong>.
+        Explora nuestra colección más reciente. Usa la paginación para descubrir más títulos. También puedes visitar la sección de <strong>películas tendencia del día</strong> y <strong>tendencia de la semana</strong>.
       </p>
-      
+
       <div *ngIf="isLoadingLatest" class="loading-indicator">Cargando películas...</div>
       <div *ngIf="errorLatest && !isLoadingLatest" class="error-message">{{ errorLatest }}</div>
-      
+
       <div class="movies-grid" *ngIf="!isLoadingLatest && !errorLatest && latestMovies.length > 0">
         <a *ngFor="let movie of latestMovies" [routerLink]="['/pelicula', movie.id]" class="movie-card">
           <img [src]="movie.posterUrl" [alt]="movie.title" onerror="this.src='assets/images/placeholder_poster.png'">
@@ -16,8 +16,27 @@
           <p class="movie-title">{{ movie.title }}</p>
         </a>
       </div>
-      <div *ngIf="!isLoadingLatest && !errorLatest && latestMovies.length === 0" class="no-movies-message">
+
+      <div *ngIf="!isLoadingLatest && !errorLatest && latestMovies.length === 0 && !errorLatest" class="no-movies-message">
         No hay películas populares disponibles en este momento.
+      </div>
+
+      <div class="pagination-controls" *ngIf="!isLoadingLatest && !errorLatest && totalPagesLatest > 1 && latestMovies.length > 0">
+        <button
+          class="pagination-button"
+          (click)="goToPreviousPageLatest()"
+          [disabled]="currentPageLatest === 1">
+          <i class="fas fa-chevron-left"></i> Anterior
+        </button>
+        <span class="pagination-info">
+          Página {{ currentPageLatest }} de {{ totalPagesLatest > maxPageLimit ? maxPageLimit : totalPagesLatest }}
+        </span>
+        <button
+          class="pagination-button"
+          (click)="goToNextPageLatest()"
+          [disabled]="currentPageLatest >= totalPagesLatest || currentPageLatest >= maxPageLimit">
+          Siguiente <i class="fas fa-chevron-right"></i>
+        </button>
       </div>
     </section>
 
