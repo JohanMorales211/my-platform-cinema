@@ -108,6 +108,18 @@
 
 .main-nav li {
   margin-left: 30px;
+  position: relative;
+}
+
+.main-nav li.nav-item-separator::before {
+  content: "|";
+  position: absolute;
+  left: -15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted-text);
+  font-size: 1em;
+  pointer-events: none;
 }
 
 .main-nav a {
@@ -239,6 +251,9 @@
     margin-left: 0;
     width: 100%;
     text-align: center;
+  }
+  .main-nav li.nav-item-separator::before {
+    display: none;
   }
   .main-nav a {
       padding: 15px 20px;

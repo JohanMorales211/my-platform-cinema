@@ -1,0 +1,28 @@
+<div class="about-page-wrapper">
+  <header class="about-header">
+    <h1>{{ pageTitle }}</h1>
+  </header>
+
+  <section class="about-content">
+    <div class="welcome-message" [innerHTML]="welcomeText | keepHtmlStrong"></div>
+  </section>
+
+  <section class="portfolio-section">
+    <p>Si quieres conocer más sobre mis otros proyectos y habilidades:</p>
+    <a [href]="portfolioLink" target="_blank" rel="noopener noreferrer" class="btn-portfolio">
+      <i class="fas fa-briefcase"></i> {{ portfolioButtonText }}
+    </a>
+  </section>
+
+  <section class="technologies-used">
+    <h2>Tecnologías utilizadas</h2>
+    <p>Este proyecto ha sido construido utilizando Angular, aprovechando sus capacidades para crear una aplicación de página única (SPA) moderna y reactiva. Algunas de las características clave incluyen:</p>
+    <ul>
+      <li><i class="fas fa-check-circle"></i> Componentes reutilizables y modulares.</li>
+      <li><i class="fas fa-check-circle"></i> Enrutamiento dinámico para una navegación fluida.</li>
+      <li><i class="fas fa-check-circle"></i> Consumo de API externas (TMDB) para obtener datos de películas.</li>
+      <li><i class="fas fa-check-circle"></i> Diseño responsive adaptado a diferentes dispositivos.</li>
+      <li><i class="fas fa-check-circle"></i> Prácticas modernas de desarrollo front-end.</li>
+    </ul>
+  </section>
+</div>
