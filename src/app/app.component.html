@@ -13,7 +13,7 @@
       <ul>
         <li><a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="isMenuOpen = false">Películas</a></li>
         <li>
-          <a routerLink="/series-en-mantenimiento" routerLinkActive="active" (click)="isMenuOpen = false">
+          <a routerLink="/series" routerLinkActive="active" (click)="isMenuOpen = false">
             Series <span class="arrow-down"></span>
           </a>
         </li>
@@ -25,10 +25,11 @@
     <div class="search-bar">
       <input
         type="text"
-        placeholder="Buscar películas..."
+        placeholder="Buscar películas o series..."
         [(ngModel)]="searchQuery"
         (keyup.enter)="onSearch()"
-        aria-label="Campo de búsqueda de películas">
+        aria-label="Campo de búsqueda de películas"
+      > <!-- <-- ¡Aquí estaba el error! Faltaba el '>' de cierre -->
       <button type="button" aria-label="Iniciar búsqueda" (click)="onSearch()">
         <i class="fas fa-search"></i>
       </button>

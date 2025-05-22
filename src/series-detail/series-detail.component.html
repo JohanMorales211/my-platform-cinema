@@ -1,0 +1,84 @@
+<div *ngIf="isLoading" class="loading-indicator-fullscreen">
+  Cargando detalles de la serie...
+</div>
+
+<div *ngIf="!isLoading && error && !series" class="movie-not-found">
+  <h2>Error</h2>
+  <p>{{ error }}</p>
+  <a routerLink="/series" class="btn-primary">Volver a Series</a>
+</div>
+
+<div class="movie-detail-page" *ngIf="!isLoading && series" [ngStyle]="getBackgroundImageStyle()">
+  <div class="movie-detail-header">
+    <button (click)="goBack()" class="back-button" aria-label="Volver">
+      <i class="fas fa-arrow-left"></i> Volver
+    </button>
+  </div>
+  <div class="movie-detail-content">
+    <div class="poster-container">
+      <img [src]="series.posterUrl" [alt]="series.title" class="movie-poster" onerror="this.src='assets/images/placeholder_poster.png'">
+    </div>
+    <div class="info-container">
+      <h1>{{ series.title }}</h1>
+      <p class="original-title" *ngIf="series.originalTitle && series.originalTitle !== series.title">
+        {{ series.originalTitle }}
+      </p>
+
+      <div class="meta-info">
+        <span class="rating-outof10" *ngIf="series.ratingOutOf10">
+          <i class="fas fa-star"></i> {{ series.ratingOutOf10 }}
+        </span>
+        <span class="rating-percentage" *ngIf="series.ratingPercentage && !series.ratingOutOf10">
+          <i class="fas fa-thumbs-up"></i> {{ series.ratingPercentage }}%
+        </span>
+        <span class="duration" *ngIf="series.numberOfSeasons"><i class="fas fa-tv"></i> {{ series.numberOfSeasons }} temporadas</span>
+        <span class="year"><i class="fas fa-calendar-alt"></i> {{ series.firstAirYear }}</span>
+      </div>
+
+      <p class="description">{{ series.description || 'Descripción no disponible.' }}</p>
+
+      <div class="details-section" *ngIf="series.genres && series.genres.length > 0">
+        <strong>Género:</strong>
+        <span>{{ series.genres.join(', ') }}</span>
+      </div>
+
+      <div class="details-section" *ngIf="series.actors && series.actors.length > 0">
+        <strong>Actores Principales:</strong>
+        <span>{{ series.actors.join(', ') }}</span>
+      </div>
+
+      <div class="share-section">
+        <button class="share-button"><i class="fas fa-share-alt"></i> Compartir</button>
+        <a href="#" class="social-icon facebook" aria-label="Compartir en Facebook"><i class="fab fa-facebook-f"></i></a>
+        <a href="#" class="social-icon twitter" aria-label="Compartir en Twitter"><i class="fab fa-twitter"></i></a>
+      </div>
+    </div>
+  </div>
+
+  <div class="trailer-section-container" *ngIf="!isLoading && series">
+    <div class="trailer-header">
+      <h2>Tráiler</h2>
+    </div>
+    <div *ngIf="series.trailerUrl && trailerSafeUrl" class="trailer-responsive-wrapper">
+      <iframe
+        width="560"
+        height="315"
+        [src]="trailerSafeUrl"
+        title="YouTube video player"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        referrerpolicy="strict-origin-when-cross-origin"
+        allowfullscreen>
+      </iframe>
+    </div>
+    <div *ngIf="!series.trailerUrl && !trailerSafeUrl" class="no-trailer-message">
+      <p>Tráiler no disponible para esta serie.</p>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="!isLoading && !series && !error" class="movie-not-found">
+  <h2>Serie no encontrada</h2>
+  <p>La serie que buscas no existe o ha sido removida.</p>
+  <a routerLink="/series" class="btn-primary">Volver a Series</a>
+</div>

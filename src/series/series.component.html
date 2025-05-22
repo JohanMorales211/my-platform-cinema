@@ -1,0 +1,70 @@
+<main class="app-main-content">
+  <div class="content-wrapper">
+    <section class="latest-movies">
+      <h1>Últimas series publicadas</h1>
+      <p class="section-description">
+        Explora nuestra colección más reciente de series. Usa la paginación para descubrir más títulos. También puedes visitar la sección de <strong>series tendencia del día</strong> y <strong>tendencia de la semana</strong>.
+      </p>
+
+      <div *ngIf="isLoadingLatest" class="loading-indicator">Cargando series...</div>
+      <div *ngIf="errorLatest && !isLoadingLatest" class="error-message">{{ errorLatest }}</div>
+
+      <div class="movies-grid" *ngIf="!isLoadingLatest && !errorLatest && latestSeries.length > 0">
+        <a *ngFor="let series of latestSeries" [routerLink]="['/series', series.id]" class="movie-card">
+          <img [src]="series.posterUrl" [alt]="series.title" onerror="this.src='assets/images/placeholder_poster.png'">
+          <span class="year-badge">{{ series.firstAirYear }}</span>
+          <p class="movie-title">{{ series.title }}</p>
+        </a>
+      </div>
+
+      <div *ngIf="!isLoadingLatest && !errorLatest && latestSeries.length === 0 && !errorLatest" class="no-movies-message">
+        No hay series populares disponibles en este momento.
+      </div>
+
+      <div class="pagination-controls" *ngIf="!isLoadingLatest && !errorLatest && totalPagesLatest > 1 && latestSeries.length > 0">
+        <button
+          class="pagination-button"
+          (click)="goToPreviousPageLatest()"
+          [disabled]="currentPageLatest === 1">
+          <i class="fas fa-chevron-left"></i> Anterior
+        </button>
+        <span class="pagination-info">
+          Página {{ currentPageLatest }} de {{ totalPagesLatest > maxPageLimit ? maxPageLimit : totalPagesLatest }}
+        </span>
+        <button
+          class="pagination-button"
+          (click)="goToNextPageLatest()"
+          [disabled]="currentPageLatest >= totalPagesLatest || currentPageLatest >= maxPageLimit">
+          Siguiente <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </section>
+
+    <aside class="featured-movies">
+      <h2>Series Destacadas</h2>
+      <div class="tabs">
+        <button class="tab-button" [class.active]="activeTab === 'day'" (click)="selectTab('day')" type="button">Día</button>
+        <button class="tab-button" [class.active]="activeTab === 'week'" (click)="selectTab('week')" type="button">Semana</button>
+      </div>
+
+      <div *ngIf="isLoadingFeatured" class="loading-indicator">Cargando destacadas...</div>
+      <div *ngIf="errorFeatured && !isLoadingFeatured" class="error-message">{{ errorFeatured }}</div>
+
+      <div class="featured-list" *ngIf="!isLoadingFeatured && !errorFeatured && currentFeaturedSeries.length > 0">
+        <a *ngFor="let series of currentFeaturedSeries" [routerLink]="['/series', series.id]" class="featured-movie-item">
+          <img [src]="series.posterUrl" [alt]="series.title" onerror="this.src='assets/images/placeholder_poster.png'">
+          <div class="details">
+            <h3>{{ series.title }}</h3>
+            <div class="info">
+              <span class="rating" *ngIf="series.ratingOutOf10"><i class="fas fa-star"></i> {{ series.ratingOutOf10 }}</span>
+              <span class="year">{{ series.firstAirYear }}</span>
+            </div>
+          </div>
+        </a>
+      </div>
+      <div *ngIf="!isLoadingFeatured && !errorFeatured && currentFeaturedSeries.length === 0" class="no-movies-message">
+        No hay series destacadas disponibles para {{ activeTab === 'day' ? 'hoy' : 'esta semana' }}.
+      </div>
+    </aside>
+  </div>
+</main>
