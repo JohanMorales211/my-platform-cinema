@@ -56,7 +56,6 @@ interface TmdbActor {
   profile_path: string | null;
 }
 
-
 @Injectable({
   providedIn: 'root'
 })
@@ -85,7 +84,6 @@ export class MovieService {
           this.posterSize = config.images.poster_sizes.includes('w500') ? 'w500' : (config.images.poster_sizes[3] || 'original');
           this.backdropSize = config.images.backdrop_sizes.includes('w1280') ? 'w1280' : (config.images.backdrop_sizes[2] || 'original');
           this.configLoaded = true;
-          console.log('TMDB Configuration Loaded:', { baseUrl: this.imageBaseUrl, posterSize: this.posterSize });
         } else {
           console.warn('TMDB Configuration response is not as expected, using defaults.');
         }
@@ -116,7 +114,7 @@ export class MovieService {
   }
 
   private mapTmdbMovieToAppMovie(tmdbMovie: TmdbMovieResult): Movie | null {
-    if (!tmdbMovie.poster_path) {
+    if (!tmdbMovie.poster_path || !tmdbMovie.overview || tmdbMovie.overview.trim() === '') {
       return null;
     }
 
@@ -133,7 +131,7 @@ export class MovieService {
       ratingPercentage: tmdbMovie.vote_average ? Math.round(tmdbMovie.vote_average * 10) : undefined,
       ratingOutOf10: tmdbMovie.vote_average ? tmdbMovie.vote_average.toFixed(1) : undefined,
       duration: tmdbMovie.runtime ? `${Math.floor(tmdbMovie.runtime / 60)}h ${tmdbMovie.runtime % 60}min` : undefined,
-      description: tmdbMovie.overview || 'Descripción no disponible.',
+      description: tmdbMovie.overview,
       genres: tmdbMovie.genres ? tmdbMovie.genres.map(g => g.name) : [],
       actors: tmdbMovie.credits?.cast ? tmdbMovie.credits.cast.slice(0, 10).map(actor => actor.name) : [],
       trailerUrl: this.extractTrailerUrl(tmdbMovie.videos?.results)
@@ -142,16 +140,15 @@ export class MovieService {
 
   private extractTrailerUrl(videos?: TmdbVideo[]): string | undefined {
     if (!videos || videos.length === 0) return undefined;
-    const trailer = videos.find(video => video.site === 'YouTube' && video.type === 'Trailer' && video.official) ||
-                    videos.find(video => video.site === 'YouTube' && video.type === 'Trailer');
-    return trailer ? `https://www.youtube.com/embed/${trailer.key}` : undefined;
+    const officialTrailer = videos.find(video => video.site === 'YouTube' && video.type === 'Trailer' && video.official);
+    if (officialTrailer) return `https://www.youtube.com/embed/${officialTrailer.key}`;
+    const anyTrailer = videos.find(video => video.site === 'YouTube' && video.type === 'Trailer');
+    return anyTrailer ? `https://www.youtube.com/embed/${anyTrailer.key}` : undefined;
   }
 
   getPopularMovies(page: number = 1, limit: number = 12): Observable<Movie[]> {
     return this.ensureConfigLoaded(() => {
-      const params = new HttpParams()
-        .set('language', 'es-ES')
-        .set('page', page.toString());
+      const params = new HttpParams().set('language', 'es-ES').set('page', page.toString());
       const url = `${this.baseUrl}/movie/popular`;
       return this.http.get<TmdbMovieListResponse>(url, { ...this.httpOptions, params }).pipe(
         map(response =>
@@ -167,9 +164,7 @@ export class MovieService {
 
   getTrendingMovies(timeWindow: 'day' | 'week', page: number = 1, limit: number = 5): Observable<Movie[]> {
     return this.ensureConfigLoaded(() => {
-      const params = new HttpParams()
-        .set('language', 'es-ES')
-        .set('page', page.toString());
+      const params = new HttpParams().set('language', 'es-ES').set('page', page.toString());
       const url = `${this.baseUrl}/trending/movie/${timeWindow}`;
       return this.http.get<TmdbMovieListResponse>(url, { ...this.httpOptions, params }).pipe(
         map(response =>
@@ -185,9 +180,7 @@ export class MovieService {
 
   getMovieDetails(id: string): Observable<Movie | undefined> {
     return this.ensureConfigLoaded(() => {
-      const params = new HttpParams()
-        .set('language', 'es-ES')
-        .set('append_to_response', 'videos,credits');
+      const params = new HttpParams().set('language', 'es-ES').set('append_to_response', 'videos,credits');
       const url = `${this.baseUrl}/movie/${id}`;
       return this.http.get<TmdbMovieResult>(url, { ...this.httpOptions, params }).pipe(
         map(response => {
@@ -238,7 +231,12 @@ export class MovieService {
 
   private handleError<T>(operation = 'operation', result?: T) {
     return (error: any): Observable<T> => {
-      console.error(`${operation} failed: ${error.status} ${error.statusText}`, error);
+      console.error(`${operation} failed: Status ${error.status} ${error.statusText}`);
+      if (error.error && typeof error.error === 'object') {
+        console.error('Error details:', error.error);
+      } else if (error.message) {
+        console.error('Error message:', error.message);
+      }
       return of(result as T);
     };
   }
