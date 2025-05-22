@@ -1,15 +1,15 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, Router, ActivatedRoute, NavigationExtras } from '@angular/router';
+import { RouterLink, Router, ActivatedRoute, NavigationExtras, Params } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { Movie } from '../app/movie-data';
-import { MovieService, PopularMoviesResponse } from '../app/movie.service';
+import { MovieService, PopularMoviesResponse, TmdbGenre } from '../app/movie.service';
 import { Subscription } from 'rxjs';
-import { take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, FormsModule],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
@@ -22,16 +22,23 @@ export class HomeComponent implements OnInit, OnDestroy {
   totalPagesLatest: number = 0;
   totalResultsLatest: number = 0;
   moviesPerPage: number = 12;
-  readonly maxPageLimit: number = 50;
+  readonly maxPageLimit: number = 500;
 
   isLoadingLatest: boolean = true;
   isLoadingFeaturedDay: boolean = true;
   isLoadingFeaturedWeek: boolean = true;
+  isLoadingGenres: boolean = true;
 
   errorLatest: string | null = null;
   errorFeatured: string | null = null;
+  errorGenres: string | null = null;
 
   activeTab: 'day' | 'week' = 'day';
+
+  availableGenres: TmdbGenre[] = [];
+  selectedGenre: string = '';
+  availableYears: number[] = [];
+  selectedYear: string = '';
 
   private subscriptions = new Subscription();
 
@@ -50,37 +57,78 @@ export class HomeComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.subscriptions.add(
-      this.activatedRoute.queryParamMap.pipe(take(1)).subscribe(params => {
-        const pageFromQuery = params.get('page');
-        if (pageFromQuery) {
-          const pageNum = parseInt(pageFromQuery, 10);
-          if (!isNaN(pageNum) && pageNum > 0) {
-            this.currentPageLatest = pageNum;
-          }
-        }
-        this.loadLatestMovies(this.currentPageLatest);
-      })
-    );
+    this.loadInitialData();
+    this.subscribeToQueryParams();
     this.loadFeaturedMovies();
   }
 
-  loadLatestMovies(page: number): void {
+  loadInitialData(): void {
+    this.isLoadingGenres = true;
+    this.errorGenres = null;
+    this.subscriptions.add(
+      this.movieService.getMovieGenres().subscribe({
+        next: genres => {
+          this.availableGenres = genres;
+          this.isLoadingGenres = false;
+        },
+        error: err => {
+          console.error('Error al cargar géneros:', err);
+          this.errorGenres = 'No se pudieron cargar los géneros.';
+          this.isLoadingGenres = false;
+        }
+      })
+    );
+    this.populateYears();
+  }
+
+  populateYears(): void {
+    const currentYear = new Date().getFullYear();
+    const startYear = 1950;
+    this.availableYears = [];
+    for (let year = currentYear + 1; year >= startYear; year--) {
+      this.availableYears.push(year);
+    }
+  }
+
+  subscribeToQueryParams(): void {
+    this.subscriptions.add(
+      this.activatedRoute.queryParamMap.subscribe(params => {
+        const pageFromQuery = params.get('page');
+        const genreFromQuery = params.get('genre');
+        const yearFromQuery = params.get('year');
+
+        const newPage = pageFromQuery ? parseInt(pageFromQuery, 10) : 1;
+        const newGenre = genreFromQuery || '';
+        const newYear = yearFromQuery || '';
+
+        if (newPage !== this.currentPageLatest || newGenre !== this.selectedGenre || newYear !== this.selectedYear) {
+            this.currentPageLatest = (isNaN(newPage) || newPage < 1) ? 1 : newPage;
+            this.selectedGenre = newGenre;
+            this.selectedYear = newYear;
+        }
+        this.loadLatestMovies(this.currentPageLatest, this.selectedGenre, this.selectedYear);
+      })
+    );
+  }
+
+  loadLatestMovies(page: number, genreId?: string, year?: string): void {
     this.isLoadingLatest = true;
     this.errorLatest = null;
-    const latestSub = this.movieService.getPopularMovies(page, this.moviesPerPage).subscribe({
+
+    const yearParam = year ? parseInt(year, 10) : undefined;
+
+    const latestSub = this.movieService.getPopularMovies(
+      page,
+      this.moviesPerPage,
+      genreId || undefined,
+      yearParam
+    ).subscribe({
       next: (data: PopularMoviesResponse) => {
         this.latestMovies = data.movies;
         this.currentPageLatest = data.currentPage;
-        this.totalPagesLatest = Math.min(data.totalPages, 500);
-        this.totalPagesLatest = Math.min(this.totalPagesLatest, this.maxPageLimit);
+        this.totalPagesLatest = data.totalPages;
         this.totalResultsLatest = data.totalResults;
         this.isLoadingLatest = false;
-
-        const currentQueryPage = this.activatedRoute.snapshot.queryParamMap.get('page');
-        if (currentQueryPage !== page.toString() || !currentQueryPage && page !== 1) {
-            this.updateUrlWithPageQuery(page);
-        }
       },
       error: (err) => {
         console.error('Error al cargar últimas películas:', err);
@@ -91,15 +139,29 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.subscriptions.add(latestSub);
   }
 
-  private updateUrlWithPageQuery(page: number): void {
-    const navigationExtras: NavigationExtras = {
-      queryParams: { page: page > 1 ? page : null },
-      queryParamsHandling: 'merge',
-      replaceUrl: true
-    };
-    this.router.navigate([], navigationExtras);
+  onFiltersChanged(): void {
+    this.updateUrlWithPageAndFilters(1, this.selectedGenre, this.selectedYear);
   }
 
+  clearFilters(): void {
+    this.selectedGenre = '';
+    this.selectedYear = '';
+    this.updateUrlWithPageAndFilters(1);
+  }
+
+  private updateUrlWithPageAndFilters(page: number, genre?: string, year?: string): void {
+    const queryParams: Params = {};
+    if (page > 1) queryParams['page'] = page;
+    if (genre) queryParams['genre'] = genre;
+    if (year) queryParams['year'] = year;
+
+    this.router.navigate([], {
+      relativeTo: this.activatedRoute,
+      queryParams: queryParams,
+      queryParamsHandling: '',
+      replaceUrl: true
+    });
+  }
 
   loadFeaturedMovies(): void {
     this.isLoadingFeaturedDay = true;
@@ -111,9 +173,6 @@ export class HomeComponent implements OnInit, OnDestroy {
             this.featuredWeekMovies = data.trendingWeek;
             this.isLoadingFeaturedDay = false;
             this.isLoadingFeaturedWeek = false;
-            if (data.trendingDay.length === 0 && data.trendingWeek.length === 0) {
-                console.warn("Listas de películas destacadas están vacías.");
-            }
         },
         error: (err) => {
             console.error('Error al cargar películas destacadas:', err);
@@ -131,13 +190,13 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   goToPreviousPageLatest(): void {
     if (this.currentPageLatest > 1) {
-      this.loadLatestMovies(this.currentPageLatest - 1);
+      this.updateUrlWithPageAndFilters(this.currentPageLatest - 1, this.selectedGenre, this.selectedYear);
     }
   }
 
   goToNextPageLatest(): void {
     if (this.currentPageLatest < this.totalPagesLatest && this.currentPageLatest < this.maxPageLimit) {
-      this.loadLatestMovies(this.currentPageLatest + 1);
+      this.updateUrlWithPageAndFilters(this.currentPageLatest + 1, this.selectedGenre, this.selectedYear);
     }
   }
 

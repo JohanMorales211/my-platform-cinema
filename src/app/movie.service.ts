@@ -56,6 +56,14 @@ interface TmdbActor {
   profile_path: string | null;
 }
 
+export interface TmdbGenre {
+  id: number;
+  name: string;
+}
+interface TmdbGenreResponse {
+  genres: TmdbGenre[];
+}
+
 export interface PopularMoviesResponse {
   movies: Movie[];
   currentPage: number;
@@ -88,8 +96,10 @@ export class MovieService {
       tap(config => {
         if (config && config.images) {
           this.imageBaseUrl = config.images.secure_base_url || config.images.base_url;
-          this.posterSize = config.images.poster_sizes.includes('w500') ? 'w500' : (config.images.poster_sizes[3] || 'original');
-          this.backdropSize = config.images.backdrop_sizes.includes('w1280') ? 'w1280' : (config.images.backdrop_sizes[2] || 'original');
+          this.posterSize = config.images.poster_sizes.includes('w500') ? 'w500'
+            : (config.images.poster_sizes.length > 3 ? config.images.poster_sizes[3] : 'original');
+          this.backdropSize = config.images.backdrop_sizes.includes('w1280') ? 'w1280'
+            : (config.images.backdrop_sizes.length > 2 ? config.images.backdrop_sizes[2] : 'original');
           this.configLoaded = true;
         } else {
           console.warn('TMDB Configuration response is not as expected, using defaults.');
@@ -109,24 +119,27 @@ export class MovieService {
     } else {
       return this.configuration$.pipe(
         switchMap(config => {
-          if (config) {
-            return requestFn();
-          } else {
-            console.error('TMDB configuration not loaded, API calls might fail or use default image paths.');
-            return requestFn();
+          if (!config) {
+            console.error('TMDB configuration not loaded. API calls might use default image paths or fail.');
           }
+          return requestFn();
         })
       );
     }
   }
 
   private mapTmdbMovieToAppMovie(tmdbMovie: TmdbMovieResult): Movie | null {
-    if (!tmdbMovie.poster_path || !tmdbMovie.overview || tmdbMovie.overview.trim() === '') {
-      return null;
+    if (!tmdbMovie.id || !tmdbMovie.title ) {
+        return null;
     }
 
-    const posterPath = `${this.imageBaseUrl}${this.posterSize}${tmdbMovie.poster_path}`;
-    const backdropPath = tmdbMovie.backdrop_path ? `${this.imageBaseUrl}${this.backdropSize}${tmdbMovie.backdrop_path}` : undefined;
+    const posterPath = tmdbMovie.poster_path
+      ? `${this.imageBaseUrl}${this.posterSize}${tmdbMovie.poster_path}`
+      : 'assets/images/placeholder_poster.png';
+
+    const backdropPath = tmdbMovie.backdrop_path
+      ? `${this.imageBaseUrl}${this.backdropSize}${tmdbMovie.backdrop_path}`
+      : undefined;
 
     return {
       id: tmdbMovie.id.toString(),
@@ -138,7 +151,7 @@ export class MovieService {
       ratingPercentage: tmdbMovie.vote_average ? Math.round(tmdbMovie.vote_average * 10) : undefined,
       ratingOutOf10: tmdbMovie.vote_average ? tmdbMovie.vote_average.toFixed(1) : undefined,
       duration: tmdbMovie.runtime ? `${Math.floor(tmdbMovie.runtime / 60)}h ${tmdbMovie.runtime % 60}min` : undefined,
-      description: tmdbMovie.overview,
+      description: tmdbMovie.overview || 'Descripción no disponible.',
       genres: tmdbMovie.genres ? tmdbMovie.genres.map(g => g.name) : [],
       actors: tmdbMovie.credits?.cast ? tmdbMovie.credits.cast.slice(0, 10).map(actor => actor.name) : [],
       trailerUrl: this.extractTrailerUrl(tmdbMovie.videos?.results)
@@ -153,12 +166,29 @@ export class MovieService {
     return anyTrailer ? `https://www.youtube.com/embed/${anyTrailer.key}` : undefined;
   }
 
-  getPopularMovies(page: number = 1, limit: number = 12): Observable<PopularMoviesResponse> {
+  getPopularMovies(
+    page: number = 1,
+    limit: number = 12,
+    genreId?: string,
+    year?: number
+  ): Observable<PopularMoviesResponse> {
     return this.ensureConfigLoaded(() => {
-      const params = new HttpParams()
+      let params = new HttpParams()
         .set('language', 'es-ES')
         .set('page', page.toString());
-      const url = `${this.baseUrl}/movie/popular`;
+
+      let url = `${this.baseUrl}/movie/popular`;
+
+      if (genreId || year) {
+        url = `${this.baseUrl}/discover/movie`;
+        params = params.set('sort_by', 'popularity.desc');
+        if (genreId) {
+          params = params.set('with_genres', genreId);
+        }
+        if (year) {
+          params = params.set('primary_release_year', year.toString());
+        }
+      }
 
       return this.http.get<TmdbMovieListResponse>(url, { ...this.httpOptions, params }).pipe(
         map(response => {
@@ -169,11 +199,22 @@ export class MovieService {
           return {
             movies: movies.slice(0, limit),
             currentPage: response.page,
-            totalPages: response.total_pages > 500 ? 500 : response.total_pages,
+            totalPages: Math.min(response.total_pages, 500),
             totalResults: response.total_results
           };
         }),
         catchError(this.handleError<PopularMoviesResponse>('getPopularMovies', { movies: [], currentPage: 1, totalPages: 0, totalResults: 0 }))
+      );
+    });
+  }
+
+  getMovieGenres(): Observable<TmdbGenre[]> {
+    return this.ensureConfigLoaded(() => {
+      const params = new HttpParams().set('language', 'es-ES');
+      const url = `${this.baseUrl}/genre/movie/list`;
+      return this.http.get<TmdbGenreResponse>(url, { ...this.httpOptions, params }).pipe(
+        map(response => response.genres || []),
+        catchError(this.handleError<TmdbGenre[]>('getMovieGenres', []))
       );
     });
   }
@@ -196,7 +237,9 @@ export class MovieService {
 
   getMovieDetails(id: string): Observable<Movie | undefined> {
     return this.ensureConfigLoaded(() => {
-      const params = new HttpParams().set('language', 'es-ES').set('append_to_response', 'videos,credits');
+      const params = new HttpParams()
+        .set('language', 'es-ES')
+        .set('append_to_response', 'videos,credits,genres');
       const url = `${this.baseUrl}/movie/${id}`;
       return this.http.get<TmdbMovieResult>(url, { ...this.httpOptions, params }).pipe(
         map(response => {
@@ -246,11 +289,13 @@ export class MovieService {
 
   private handleError<T>(operation = 'operation', result?: T) {
     return (error: any): Observable<T> => {
-      console.error(`${operation} failed: Status ${error.status} ${error.statusText}`);
+      console.error(`${operation} failed: Status ${error.status || 'unknown'} ${error.statusText || 'unknown error'}`);
       if (error.error && typeof error.error === 'object') {
-        console.error('Error details:', error.error);
+        console.error('Error details:', JSON.stringify(error.error, null, 2));
       } else if (error.message) {
         console.error('Error message:', error.message);
+      } else {
+        console.error('Full error object:', JSON.stringify(error, null, 2));
       }
       return of(result as T);
     };
